@@ -11,4 +11,8 @@ hyper = "0.13.2"
 tokio = { version = "0.2.11", features = ["full"] }
 lazy_static = "1.4.0"
 prometheus = "0.7.0"
-reqwest = "0.10.2"
+reqwest = { version = "0.10.2", features = ["json"] }
+serde = "1.0.104"
+serde_derive = "1.0.104"
+serde_json = "1.0.48"
+ticker = "0.1.1"

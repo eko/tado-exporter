@@ -2,15 +2,20 @@ use std::convert::Infallible;
 
 use lazy_static::lazy_static;
 use hyper::{header::CONTENT_TYPE, Body, Request, Response};
-use prometheus::{Encoder, Gauge, TextEncoder};
+use prometheus::{Encoder, GaugeVec, TextEncoder};
 
 lazy_static! {
-    pub static ref TEMPERATURE_GAUGE: Gauge = register_gauge!(opts!(
+    pub static ref TEMPERATURE_GAUGE: GaugeVec = register_gauge_vec!(
         "tado_temperature_degre",
-        "The temperature of a piece in celsius degres.",
-        labels! {"piece" => "all",}
-    ))
-    .unwrap();
+        "The temperature of a specific zone in celsius degres.",
+        &["zone", "unit"]
+    ).unwrap();
+
+    pub static ref HUMIDITY_PERCENTAGE: GaugeVec = register_gauge_vec!(
+        "tado_humidity_percentage",
+        "The % of humidity in a specific zone.",
+        &["zone"]
+    ).unwrap();
 }
 
 pub async fn renderer(_req: Request<Body>) -> Result<Response<Body>, Infallible> {
