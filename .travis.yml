@@ -1,0 +1,16 @@
+language: rust
+cache: cargo
+env: TARGET=arm-unknown-linux-gnueabihf CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+before_deploy: ci/before_deploy.sh
+
+matrix:
+    include:
+      - env: TARGET=arm-unknown-linux-gnueabihf CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+      - env: TARGET=x86_64-unknown-linux-gnu
+
+deploy:
+  file: tado_exporter-$TRAVIS_TAG-$TARGET.tar.gz
+  on:
+    tags: true
+  provider: releases
+  skip_cleanup: true
