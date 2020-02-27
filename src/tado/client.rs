@@ -1,5 +1,6 @@
 extern crate reqwest;
 
+use log::{info, error};
 use super::metrics::{TEMPERATURE_GAUGE, HUMIDITY_PERCENTAGE};
 use super::model::{AuthApiResponse, MeApiResponse, ZonesApiResponse, ZoneStateApiResponse};
 
@@ -82,35 +83,62 @@ impl Client {
 
     pub async fn retrieve(&mut self) {
         // retrieve an access token to use the tado API
-        let api_response = self.authenticate().await.unwrap();
+        let api_response = match self.authenticate().await {
+            Ok(resp) => resp,
+            Err(e) => {
+                error!("[tado° client] unable to authenticate: {}", e);
+                return;
+            }
+        };
+
         self.access_token = api_response.access_token;
 
         // retrieve home details (only if we don't already have a home identifier)
         if self.home_id == 0 {
-            let me_response = self.me().await.unwrap();
+            let me_response = match self.me().await {
+                Ok(resp) => resp,
+                Err(e) => {
+                    error!("[tado° client] unable to retrieve home identifier: {}", e);
+                    return;
+                }
+            };
+
             self.home_id = me_response.homes.first().unwrap().id;
         }
 
         // retrieve home different zones
-        let zones_response = self.zones().await.unwrap();
+        let zones_response = match self.zones().await {
+            Ok(resp) => resp,
+            Err(e) => {
+                error!("[tado° client] unable to retrieve home zones: {}", e);
+                return;
+            }
+        };
+
         for zone in zones_response {
-            println!("[tado° client] retrieving zone details for {}...", zone.name);
-            let zone_state_response = self.zone_state(zone.id).await.unwrap();
+            info!("[tado° client] retrieving zone details for {}...", zone.name);
+            let zone_state_response = match self.zone_state(zone.id).await {
+                Ok(resp) => resp,
+                Err(e) => {
+                    error!("[tado° client] unable to retrieve home zone '{}' state: {}", zone.name, e);
+                    return;
+                }
+            };
 
             // temperature: celsius
             let temperature_celsius: f64 = zone_state_response.sensorDataPoints.insideTemperature.celsius;
             TEMPERATURE_GAUGE.with_label_values(&[zone.name.as_str(), "celsius"]).set(temperature_celsius);
-            println!("-> temperature (celsius): {}", temperature_celsius);
+            info!("-> temperature (celsius): {}", temperature_celsius);
 
             // temperature: fahrenheit
             let temperature_fahrenheit: f64 = zone_state_response.sensorDataPoints.insideTemperature.fahrenheit;
             TEMPERATURE_GAUGE.with_label_values(&[zone.name.as_str(), "fahrenheit"]).set(temperature_celsius);
-            println!("-> temperature (fahrenheit): {}", temperature_fahrenheit);
+            info!("-> temperature (fahrenheit): {}", temperature_fahrenheit);
 
             // humidity percentage
             let humidity_percentage: f64 = zone_state_response.sensorDataPoints.humidity.percentage;
             HUMIDITY_PERCENTAGE.with_label_values(&[zone.name.as_str()]).set(humidity_percentage);
-            println!("-> humidity: {}%", humidity_percentage);
+            info!("-> humidity: {}%", humidity_percentage);
         }
     }
 }
