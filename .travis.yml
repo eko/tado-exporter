@@ -1,16 +1,30 @@
 language: rust
 cache: cargo
-env: TARGET=arm-unknown-linux-gnueabihf CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
-before_deploy: ci/before_deploy.sh
 
 matrix:
     include:
-      - env: TARGET=arm-unknown-linux-gnueabihf CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
       - env: TARGET=x86_64-unknown-linux-gnu
+      - env: TARGET=arm-unknown-linux-gnueabihf CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+
+before_install:
+  - sudo apt-get install libssl-dev
+
+install: |
+  if [ "$TARGET" = "arm-unknown-linux-gnueabihf" ]; then
+    git clone --depth=1 https://github.com/raspberrypi/tools.git /tmp/tools
+    export PATH=/tmp/tools/arm-bcm2708/arm-linux-gnueabihf/bin:$PATH
+  fi
+
+script:
+  - rustup target add $TARGET
+  - cargo build --target=$TARGET --release
+  - tar -C target/$TARGET/release -czf tado-exporter-$TRAVIS_TAG-$TARGET.tar.gz tado-exporter
 
 deploy:
-  file: tado_exporter-$TRAVIS_TAG-$TARGET.tar.gz
+  provider: releases
+  api_key:
+    secure: $GITHUB_TOKEN
+  skip_cleanup: true
   on:
     tags: true
-  provider: releases
-  skip_cleanup: true
+  file: tado-exporter-$TRAVIS_TAG-$TARGET.tar.gz
