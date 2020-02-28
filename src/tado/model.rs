@@ -22,7 +22,32 @@ pub struct ZonesApiResponse {
 #[derive(Deserialize, Debug)]
 #[allow(non_snake_case)]
 pub struct ZoneStateApiResponse {
+    pub setting: ZoneStateSettingApiResponse,
+    pub activityDataPoints: ZoneStateActivityDataPointsApiResponse,
     pub sensorDataPoints: ZoneStateSensorDataPointsApiResponse,
+}
+
+#[derive(Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct ZoneStateSettingApiResponse {
+    pub temperature: ZoneStateSettingTemperatureApiResponse,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct ZoneStateSettingTemperatureApiResponse {
+    pub celsius: f64,
+    pub fahrenheit: f64,
+}
+
+#[derive(Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct ZoneStateActivityDataPointsApiResponse {
+    pub heatingPower: ActivityDataPointsHeatingPowerApiResponse,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct ActivityDataPointsHeatingPowerApiResponse {
+    pub percentage: f64,
 }
 
 #[derive(Deserialize, Debug)]
@@ -41,4 +66,9 @@ pub struct SensorDataPointsInsideTemperatureApiResponse {
 #[derive(Deserialize, Debug)]
 pub struct SensorDataPointsHumidityApiResponse {
     pub percentage: f64,
+}
+
+pub struct ZoneStateResponse {
+    pub name: String,
+    pub state_response: ZoneStateApiResponse,
 }

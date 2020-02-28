@@ -1,8 +1,8 @@
 extern crate reqwest;
 
 use log::{info, error};
-use super::metrics::{TEMPERATURE_GAUGE, HUMIDITY_PERCENTAGE};
-use super::model::{AuthApiResponse, MeApiResponse, ZonesApiResponse, ZoneStateApiResponse};
+use std::vec::Vec;
+use super::model::{AuthApiResponse, MeApiResponse, ZonesApiResponse, ZoneStateApiResponse, ZoneStateResponse};
 
 const AUTH_URL: &'static str = "https://auth.tado.com/oauth/token";
 
@@ -81,13 +81,13 @@ impl Client {
         Ok(resp.json::<ZoneStateApiResponse>().await?)
     }
 
-    pub async fn retrieve(&mut self) {
+    pub async fn retrieve(&mut self) -> Vec<ZoneStateResponse> {
         // retrieve an access token to use the tado API
         let api_response = match self.authenticate().await {
             Ok(resp) => resp,
             Err(e) => {
-                error!("[tado° client] unable to authenticate: {}", e);
-                return;
+                error!("unable to authenticate: {}", e);
+                return Vec::new();
             }
         };
 
@@ -98,8 +98,8 @@ impl Client {
             let me_response = match self.me().await {
                 Ok(resp) => resp,
                 Err(e) => {
-                    error!("[tado° client] unable to retrieve home identifier: {}", e);
-                    return;
+                    error!("unable to retrieve home identifier: {}", e);
+                    return Vec::new();
                 }
             };
 
@@ -110,35 +110,29 @@ impl Client {
         let zones_response = match self.zones().await {
             Ok(resp) => resp,
             Err(e) => {
-                error!("[tado° client] unable to retrieve home zones: {}", e);
-                return;
+                error!("unable to retrieve home zones: {}", e);
+                return Vec::new();
             }
         };
 
+        let mut response = Vec::<ZoneStateResponse>::new();
+
         for zone in zones_response {
-            info!("[tado° client] retrieving zone details for {}...", zone.name);
+            info!("retrieving zone details for {}...", zone.name);
             let zone_state_response = match self.zone_state(zone.id).await {
                 Ok(resp) => resp,
                 Err(e) => {
-                    error!("[tado° client] unable to retrieve home zone '{}' state: {}", zone.name, e);
-                    return;
+                    error!("unable to retrieve home zone '{}' state: {}", zone.name, e);
+                    return Vec::new();
                 }
             };
 
-            // temperature: celsius
-            let temperature_celsius: f64 = zone_state_response.sensorDataPoints.insideTemperature.celsius;
-            TEMPERATURE_GAUGE.with_label_values(&[zone.name.as_str(), "celsius"]).set(temperature_celsius);
-            info!("-> temperature (celsius): {}", temperature_celsius);
-
-            // temperature: fahrenheit
-            let temperature_fahrenheit: f64 = zone_state_response.sensorDataPoints.insideTemperature.fahrenheit;
-            TEMPERATURE_GAUGE.with_label_values(&[zone.name.as_str(), "fahrenheit"]).set(temperature_celsius);
-            info!("-> temperature (fahrenheit): {}", temperature_fahrenheit);
-
-            // humidity percentage
-            let humidity_percentage: f64 = zone_state_response.sensorDataPoints.humidity.percentage;
-            HUMIDITY_PERCENTAGE.with_label_values(&[zone.name.as_str()]).set(humidity_percentage);
-            info!("-> humidity: {}%", humidity_percentage);
+            response.push(ZoneStateResponse{
+                name: zone.name,
+                state_response: zone_state_response,
+            });
         }
+
+        return response;
     }
 }

@@ -20,7 +20,7 @@ use hyper::{service::make_service_fn, service::service_fn, Server};
 use ticker::Ticker;
 
 use config::loader as config_loader;
-use tado::metrics::renderer;
+use tado::metrics;
 use tado::client::Client as TadoClient;
 
 #[tokio::main]
@@ -37,7 +37,7 @@ async fn main() {
     info!("starting tado° exporter on address: {:?}", addr);
 
     let make_svc = make_service_fn(|_conn| async {
-        Ok::<_, Infallible>(service_fn(renderer))
+        Ok::<_, Infallible>(service_fn(metrics::renderer))
     });
 
     let server = Server::bind(&addr).serve(make_svc);
@@ -51,9 +51,12 @@ async fn main() {
 fn run_ticker(config: config_loader::Config) {
     tokio::spawn(async move {
         let mut tado_client = TadoClient::new(config.username, config.password, config.client_secret);
+
         let ticker = Ticker::new(0.., Duration::from_secs(config.ticker));
         for _ in ticker {
-            tado_client.retrieve().await;
+            let zones = tado_client.retrieve().await;
+            
+            metrics::set(zones);
         }
     });
 }
