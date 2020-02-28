@@ -42,3 +42,35 @@ pub fn load() -> Config {
 
     return config;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_config_load() {
+        // When
+        let config = load();
+
+        // Then we should load default values
+        assert_eq!(config.ticker, 10);
+        assert_eq!(config.username, "");
+        assert_eq!(config.password, "");
+        assert_eq!(config.client_secret, "wZaRN7rpjn3FoNyF5IFuxg9uMzYJcvOoQ8QWiIqS3hfk6gLhVlG57j5YNoZL2Rtc");
+
+        // Given the following environment variable values
+        env::set_var("EXPORTER_USERNAME", "test-user");
+        env::set_var("EXPORTER_PASSWORD", "123Password!");
+        env::set_var("EXPORTER_TICKER", "30");
+        env::set_var("EXPORTER_CLIENT_SECRET", "123-secret");
+
+        // When
+        let config = load();
+
+        // Then we should have these values set
+        assert_eq!(config.ticker, 30);
+        assert_eq!(config.username, "test-user");
+        assert_eq!(config.password, "123Password!");
+        assert_eq!(config.client_secret, "123-secret");
+    }
+}

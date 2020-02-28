@@ -54,9 +54,9 @@ fn run_ticker(config: config_loader::Config) {
 
         let ticker = Ticker::new(0.., Duration::from_secs(config.ticker));
         for _ in ticker {
-            let zones = tado_client.retrieve().await;
-            
-            metrics::set(zones);
+            metrics::set(
+                tado_client.retrieve().await
+            );
         }
     });
 }
