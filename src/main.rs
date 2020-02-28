@@ -29,7 +29,7 @@ async fn main() {
 
     let config = config_loader::load();
 
-    // Start ticker
+    // start ticker
     run_ticker(config);
 
     // set up http server
