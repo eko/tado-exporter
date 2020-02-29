@@ -52,6 +52,8 @@ fn run_ticker(config: config_loader::Config) {
     tokio::spawn(async move {
         let mut tado_client = TadoClient::new(config.username, config.password, config.client_secret);
 
+        info!("waiting for the first tick in {} seconds...", config.ticker);
+
         let ticker = Ticker::new(0.., Duration::from_secs(config.ticker));
         for _ in ticker {
             metrics::set(
