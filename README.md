@@ -4,6 +4,8 @@
 
 This is a Prometheus exporter for [tado°](https://www.tado.com/) thermostatic handles.
 
+![Grafana dashboard](https://raw.githubusercontent.com/eko/tado-exporter/master/misc/screenshot.jpg)
+
 ## Prerequisites
 
 In case you want to develop on this project, you will need:
