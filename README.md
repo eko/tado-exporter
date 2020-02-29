@@ -25,6 +25,18 @@ You can download the latest version of the binary built for your architecture he
     [Linux](https://github.com/eko/tado-exporter/releases/latest/download/tado-exporter-v0.0.3-arm-unknown-linux-gnueabihf.tar.gz)
 ]
 
+### Using Docker
+
+The exporter is also available as a [Docker image](https://hub.docker.com/r/ekofr/tado-exporter).
+You can run it using the following example and pass configuration environment variables:
+
+```
+$ docker run \
+  -e 'EXPORTER_USERNAME=your-username@acme.tld' \
+  -e 'EXPORTER_PASSWORD=your-password' \
+  ekofr/tado-exporter:latest
+```
+
 ### From sources
 
 Optionally, you can download and build it from the sources. You have to retrieve the project sources by using one of the following way:
