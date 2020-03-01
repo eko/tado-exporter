@@ -1,18 +1,11 @@
 #[macro_use]
-extern crate log;
-
-#[macro_use]
 extern crate prometheus;
-
-#[macro_use]
-extern crate serde_derive;
-
-extern crate serde_json;
 
 mod config;
 mod tado;
 
 use env_logger::Env;
+use log::{info, error};
 use tokio;
 use std::convert::Infallible;
 use std::time::Duration;

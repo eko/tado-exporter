@@ -2,6 +2,7 @@ use std::convert::Infallible;
 
 use super::model::ZoneStateResponse;
 
+use log::info;
 use lazy_static::lazy_static;
 use hyper::{header::CONTENT_TYPE, Body, Request, Response};
 use prometheus::{Encoder, GaugeVec, TextEncoder};

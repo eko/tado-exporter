@@ -1,7 +1,7 @@
-extern crate reqwest;
-
 use log::{info, error};
 use std::vec::Vec;
+use reqwest;
+
 use super::model::{AuthApiResponse, MeApiResponse, ZonesApiResponse, ZoneStateApiResponse, ZoneStateResponse};
 
 const AUTH_URL: &'static str = "https://auth.tado.com/oauth/token";

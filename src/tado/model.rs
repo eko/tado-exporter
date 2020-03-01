@@ -1,3 +1,5 @@
+use serde_derive::Deserialize;
+
 #[derive(Deserialize, Debug)]
 pub struct AuthApiResponse {
     pub access_token: String,
