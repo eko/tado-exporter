@@ -37,7 +37,7 @@ async fn main() {
 
     // start HTTP server
     if let Err(e) = server.await {
-        error!("a server error occured: {}", e);
+        error!("a server error occurred: {}", e);
     }
 }
 
