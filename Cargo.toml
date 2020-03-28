@@ -10,7 +10,7 @@ edition = "2018"
 hyper = "0.13.2"
 tokio = { version = "0.2.13", features = ["full"] }
 lazy_static = "1.4.0"
-prometheus = "0.7.0"
+prometheus = "0.8.0"
 reqwest = { version = "0.10.2", features = ["json"] }
 serde = "1.0.104"
 serde_derive = "1.0.105"
