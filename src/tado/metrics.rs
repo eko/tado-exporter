@@ -35,14 +35,22 @@ lazy_static! {
 
 pub fn set(zones: Vec<ZoneStateResponse>) {
     for zone in zones {
-        // setting temperature
-        let value: f64 = zone.state_response.setting.temperature.celsius;
-        SETTING_TEMPERATURE.with_label_values(&[zone.name.as_str(), "celsius"]).set(value);
-        info!("-> {} -> setting temperature (celsius): {}", zone.name, value);
+        // The setting temperature may be null in the API response, if the
+        // zone's heating mode is turned off. If the temperature setting is
+        // absent, from the API response we'll simply not set its gauge values.
+        if let Some(setting_temperature) = zone.state_response.setting.temperature {
+            // setting temperature
+            let value: f64 = setting_temperature.celsius;
+            SETTING_TEMPERATURE.with_label_values(&[zone.name.as_str(), "celsius"]).set(value);
+            info!("-> {} -> setting temperature (celsius): {}", zone.name, value);
 
-        let value: f64 = zone.state_response.setting.temperature.fahrenheit;
-        SETTING_TEMPERATURE.with_label_values(&[zone.name.as_str(), "fahrenheit"]).set(value);
-        info!("-> {} -> setting temperature (fahrenheit): {}", zone.name, value);
+            let value: f64 = setting_temperature.fahrenheit;
+            SETTING_TEMPERATURE.with_label_values(&[zone.name.as_str(), "fahrenheit"]).set(value);
+            info!("-> {} -> setting temperature (fahrenheit): {}", zone.name, value);
+        } else {
+            info!("-> {} -> setting temperature (celsius): Off", zone.name);
+            info!("-> {} -> setting temperature (fahrenheit): Off", zone.name);
+        }
 
         // sensor temperature
         let value: f64 = zone.state_response.sensorDataPoints.insideTemperature.celsius;

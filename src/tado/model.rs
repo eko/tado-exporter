@@ -32,7 +32,7 @@ pub struct ZoneStateApiResponse {
 #[derive(Deserialize, Debug)]
 #[allow(non_snake_case)]
 pub struct ZoneStateSettingApiResponse {
-    pub temperature: ZoneStateSettingTemperatureApiResponse,
+    pub temperature: Option<ZoneStateSettingTemperatureApiResponse>,
 }
 
 #[derive(Deserialize, Debug)]
