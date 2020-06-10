@@ -14,7 +14,7 @@ prometheus = "0.9.0"
 reqwest = { version = "0.10.6", features = ["json"] }
 serde = "1.0.111"
 serde_derive = "1.0.111"
-serde_json = "1.0.53"
+serde_json = "1.0.54"
 ticker = "0.1.1"
 log = "0.4.8"
 env_logger = "0.7.1"
