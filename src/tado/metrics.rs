@@ -14,6 +14,12 @@ lazy_static! {
         &["zone"]
     ).unwrap();
 
+    pub static ref ACTIVITY_AC_POWER: GaugeVec = register_gauge_vec!(
+        "tado_activity_ac_power_value",
+        "The value of ac power in a specific zone.",
+        &["zone"]
+    ).unwrap();
+
     pub static ref SETTING_TEMPERATURE: GaugeVec = register_gauge_vec!(
         "tado_setting_temperature_value",
         "The temperature of a specific zone in celsius degres.",
@@ -67,9 +73,23 @@ pub fn set(zones: Vec<ZoneStateResponse>) {
         info!("-> {} -> sensor humidity: {}%", zone.name, value);
 
         // heating power
-        let value: f64 = zone.state_response.activityDataPoints.heatingPower.percentage;
-        ACTIVITY_HEATING_POWER.with_label_values(&[zone.name.as_str()]).set(value);
-        info!("-> {} -> heating power: {}%", zone.name, value);
+        if let Some(heating_power) = zone.state_response.activityDataPoints.heatingPower {
+            let value: f64 = heating_power.percentage;
+            ACTIVITY_HEATING_POWER.with_label_values(&[zone.name.as_str()]).set(value);
+            info!("-> {} -> heating power: {}%", zone.name, value);
+        }
+
+        // ac power
+        if let Some(ac_power) = zone.state_response.activityDataPoints.acPower {
+            let value: f64 = match ac_power.value.as_str() {
+                "ON"  => 1.0,
+                "OFF" => 0.0,
+                _     => 0.0,
+            };
+
+            ACTIVITY_AC_POWER.with_label_values(&[zone.name.as_str()]).set(value);
+            info!("-> {} -> ac power: {}", zone.name, value);
+        }
     }
 }
 

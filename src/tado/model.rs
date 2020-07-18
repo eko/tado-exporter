@@ -44,12 +44,18 @@ pub struct ZoneStateSettingTemperatureApiResponse {
 #[derive(Deserialize, Debug)]
 #[allow(non_snake_case)]
 pub struct ZoneStateActivityDataPointsApiResponse {
-    pub heatingPower: ActivityDataPointsHeatingPowerApiResponse,
+    pub heatingPower: Option<ActivityDataPointsHeatingPowerApiResponse>,
+    pub acPower: Option<ActivityDataPointsAcPowerApiResponse>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct ActivityDataPointsHeatingPowerApiResponse {
     pub percentage: f64,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct ActivityDataPointsAcPowerApiResponse {
+    pub value: String,
 }
 
 #[derive(Deserialize, Debug)]

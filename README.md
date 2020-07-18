@@ -122,6 +122,7 @@ scrape_configs:
 
 | Metric name                  | Description                                                                                |
 |:----------------------------:|--------------------------------------------------------------------------------------------|
+| tado_activity_ac_power_value           | This represent the value (1.0 = ON, 0.0 = OFF) of ac power for every zone        |
 | tado_activity_heating_power_percentage | This represent the % of heating power for every zone                             |
 | tado_setting_temperature_value         | This represent the current temperature you asked/programmed in a zone            |
 | tado_sensor_temperature_value          | This represent the current temperature detected by sensor in a zone              |
