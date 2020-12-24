@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hyper = "0.13.9"
+hyper = "0.14.1"
 tokio = { version = "0.2.24", features = ["full"] }
 lazy_static = "1.4.0"
 prometheus = "0.9.0"
