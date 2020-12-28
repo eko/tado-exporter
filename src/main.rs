@@ -4,7 +4,7 @@ extern crate prometheus;
 mod config;
 mod tado;
 
-use env_logger::Env;
+use env_logger::{Builder as LoggerBuilder, Env};
 use log::{info, error};
 use tokio;
 use std::convert::Infallible;
@@ -18,7 +18,7 @@ use tado::client::Client as TadoClient;
 
 #[tokio::main]
 async fn main() {
-    env_logger::from_env(Env::default().default_filter_or("info")).init();
+    LoggerBuilder::from_env(Env::default().default_filter_or("info")).init();
 
     let config = config_loader::load();
 
