@@ -12,7 +12,7 @@ impl Config {
         println!("--- tado° exporter configuration ---");
         println!("Ticker seconds: {}", self.ticker);
         println!("Username: {}", self.username);
-        println!("Password: {}", self.password);
+        println!("Password: <not printed>");
         println!("Client secret: {}", self.client_secret);
         println!("------------------------------------");
     }
