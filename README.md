@@ -36,6 +36,7 @@ You can run it using the following example and pass configuration environment va
 $ docker run \
   -e 'EXPORTER_USERNAME=your-username@acme.tld' \
   -e 'EXPORTER_PASSWORD=your-password' \
+  -p '9898:9898'
   ekofr/tado-exporter:latest
 ```
 
@@ -117,6 +118,7 @@ scrape_configs:
 | EXPORTER_PASSWORD      | Required. This represent your tado° account password                                             |
 | EXPORTER_CLIENT_SECRET | Optional. This represent your tado° account client secret, using default value seems to work     |
 | EXPORTER_TICKER        | Optional (default: 10). This represent the number of seconds the exporter will look for new data |
+| RUST_LOG               | Optional (default: info). This describes the log level (see https://docs.rs/env_logger/)         |
 
 ## Available Prometheus metrics
 
