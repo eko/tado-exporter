@@ -36,7 +36,7 @@ You can run it using the following example and pass configuration environment va
 $ docker run \
   -e 'EXPORTER_USERNAME=your-username@acme.tld' \
   -e 'EXPORTER_PASSWORD=your-password' \
-  -p '9898:9898'
+  -p '9898:9898' \
   ekofr/tado-exporter:latest
 ```
 
