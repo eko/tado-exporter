@@ -32,6 +32,8 @@ pub struct ZoneStateApiResponse {
 #[derive(Deserialize, Debug)]
 #[allow(non_snake_case)]
 pub struct ZoneStateSettingApiResponse {
+    #[serde(rename="type")]
+    pub deviceType: String,
     pub temperature: Option<ZoneStateSettingTemperatureApiResponse>,
 }
 
@@ -61,8 +63,8 @@ pub struct ActivityDataPointsAcPowerApiResponse {
 #[derive(Deserialize, Debug)]
 #[allow(non_snake_case)]
 pub struct ZoneStateSensorDataPointsApiResponse {
-    pub insideTemperature: SensorDataPointsInsideTemperatureApiResponse,
-    pub humidity: SensorDataPointsHumidityApiResponse,
+    pub insideTemperature: Option<SensorDataPointsInsideTemperatureApiResponse>,
+    pub humidity: Option<SensorDataPointsHumidityApiResponse>,
 }
 
 #[derive(Deserialize, Debug)]
