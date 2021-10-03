@@ -1,6 +1,6 @@
 # Tado° Prometheus Exporter
 
-[![TravisBuildStatus](https://api.travis-ci.org/eko/tado-exporter.svg?branch=master)](https://travis-ci.org/eko/tado-exporter)
+[![Push on branch](https://github.com/eko/tado-exporter/actions/workflows/master.yml/badge.svg)](https://github.com/eko/tado-exporter/actions/workflows/master.yml)
 
 This is a Prometheus exporter for [tado°](https://www.tado.com/) thermostatic handles.
 
