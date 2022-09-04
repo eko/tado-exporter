@@ -49,9 +49,8 @@ fn run_ticker(config: config_loader::Config) {
 
         let ticker = Ticker::new(0.., Duration::from_secs(config.ticker));
         for _ in ticker {
-            metrics::set(
-                tado_client.retrieve().await
-            );
+            metrics::set_zones(tado_client.retrieve_zones().await);
+            metrics::set_weather(tado_client.retrieve_weather().await);
         }
     });
 }
