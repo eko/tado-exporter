@@ -4,7 +4,7 @@ use reqwest;
 
 use super::model::{AuthApiResponse, MeApiResponse, ZonesApiResponse, ZoneStateApiResponse, ZoneStateResponse};
 
-const AUTH_URL: &'static str = "https://auth.tado.com/oauth/token";
+const AUTH_URL: &str = "https://auth.tado.com/oauth/token";
 
 macro_rules! format_base_url {
     () => { "https://my.tado.com{endpoint}" };
@@ -23,9 +23,9 @@ impl Client {
     pub fn new(username: String, password: String, client_secret: String) -> Client {
         Client {
             http_client: reqwest::Client::new(),
-            username: username,
-            password: password,
-            client_secret: client_secret,
+            username,
+            password,
+            client_secret,
             access_token: String::default(),
             home_id: 0,
         }
@@ -46,7 +46,7 @@ impl Client {
             .form(&params)
             .send().await?;
 
-        Ok(resp.json::<AuthApiResponse>().await?)
+        resp.json::<AuthApiResponse>().await
     }
 
     async fn get(&self, url: String) -> Result<reqwest::Response, reqwest::Error> {
@@ -60,7 +60,7 @@ impl Client {
         let url = format!(format_base_url!(), endpoint = "/api/v2/me");
         let resp = self.get(url).await?;
 
-        Ok(resp.json::<MeApiResponse>().await?)
+        resp.json::<MeApiResponse>().await
     }
 
     async fn zones(&mut self) -> Result<Vec<ZonesApiResponse>, reqwest::Error> {
@@ -69,7 +69,7 @@ impl Client {
 
         let resp = self.get(url).await?;
 
-        Ok(resp.json::<Vec<ZonesApiResponse>>().await?)
+        resp.json::<Vec<ZonesApiResponse>>().await
     }
 
     async fn zone_state(&mut self, zone_id: i32) -> Result<ZoneStateApiResponse, reqwest::Error> {
@@ -78,7 +78,7 @@ impl Client {
 
         let resp = self.get(url).await?;
 
-        Ok(resp.json::<ZoneStateApiResponse>().await?)
+        resp.json::<ZoneStateApiResponse>().await
     }
 
     pub async fn retrieve(&mut self) -> Vec<ZoneStateResponse> {
@@ -133,6 +133,6 @@ impl Client {
             });
         }
 
-        return response;
+        response
     }
 }

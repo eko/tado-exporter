@@ -40,7 +40,7 @@ pub fn load() -> Config {
 
     config.print();
 
-    return config;
+    config
 }
 
 #[cfg(test)]

@@ -6,7 +6,6 @@ mod tado;
 
 use env_logger::{Builder as LoggerBuilder, Env};
 use log::{info, error};
-use tokio;
 use std::convert::Infallible;
 use std::time::Duration;
 use hyper::{service::make_service_fn, service::service_fn, Server};
