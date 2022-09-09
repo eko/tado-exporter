@@ -34,7 +34,9 @@ pub fn load() -> Config {
         },
         client_secret: match env::var("EXPORTER_CLIENT_SECRET") {
             Ok(v) => v,
-            Err(_) => "wZaRN7rpjn3FoNyF5IFuxg9uMzYJcvOoQ8QWiIqS3hfk6gLhVlG57j5YNoZL2Rtc".to_string(),
+            Err(_) => {
+                "wZaRN7rpjn3FoNyF5IFuxg9uMzYJcvOoQ8QWiIqS3hfk6gLhVlG57j5YNoZL2Rtc".to_string()
+            }
         },
     };
 
@@ -56,7 +58,10 @@ mod tests {
         assert_eq!(config.ticker, 10);
         assert_eq!(config.username, "");
         assert_eq!(config.password, "");
-        assert_eq!(config.client_secret, "wZaRN7rpjn3FoNyF5IFuxg9uMzYJcvOoQ8QWiIqS3hfk6gLhVlG57j5YNoZL2Rtc");
+        assert_eq!(
+            config.client_secret,
+            "wZaRN7rpjn3FoNyF5IFuxg9uMzYJcvOoQ8QWiIqS3hfk6gLhVlG57j5YNoZL2Rtc"
+        );
 
         // given the following environment variable values
         env::set_var("EXPORTER_USERNAME", "test-user");

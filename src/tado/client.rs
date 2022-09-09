@@ -1,13 +1,17 @@
-use log::{info, error};
-use std::vec::Vec;
+use log::{error, info};
 use reqwest;
+use std::vec::Vec;
 
-use super::model::{AuthApiResponse, MeApiResponse, ZonesApiResponse, ZoneStateApiResponse, ZoneStateResponse};
+use super::model::{
+    AuthApiResponse, MeApiResponse, ZoneStateApiResponse, ZoneStateResponse, ZonesApiResponse,
+};
 
 const AUTH_URL: &str = "https://auth.tado.com/oauth/token";
 
 macro_rules! format_base_url {
-    () => { "https://my.tado.com{endpoint}" };
+    () => {
+        "https://my.tado.com{endpoint}"
+    };
 }
 
 pub struct Client {
@@ -41,10 +45,12 @@ impl Client {
             ("password", self.password.as_str()),
         ];
 
-        let resp = self.http_client
+        let resp = self
+            .http_client
             .post(reqwest::Url::parse(AUTH_URL).unwrap())
             .form(&params)
-            .send().await?;
+            .send()
+            .await?;
 
         resp.json::<AuthApiResponse>().await
     }
@@ -53,7 +59,8 @@ impl Client {
         self.http_client
             .get(reqwest::Url::parse(url.as_str()).unwrap())
             .header("Authorization", format!("Bearer: {}", self.access_token))
-            .send().await
+            .send()
+            .await
     }
 
     async fn me(&self) -> Result<MeApiResponse, reqwest::Error> {
@@ -127,7 +134,7 @@ impl Client {
                 }
             };
 
-            response.push(ZoneStateResponse{
+            response.push(ZoneStateResponse {
                 name: zone.name,
                 state_response: zone_state_response,
             });
