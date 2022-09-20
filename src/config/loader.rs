@@ -51,6 +51,12 @@ mod tests {
 
     #[test]
     fn test_config_load() {
+        // Given no env variable are set
+        env::remove_var("EXPORTER_USERNAME");
+        env::remove_var("EXPORTER_PASSWORD");
+        env::remove_var("EXPORTER_TICKER");
+        env::remove_var("EXPORTER_CLIENT_SECRET");
+
         // when
         let config = load();
 
