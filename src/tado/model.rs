@@ -34,7 +34,7 @@ pub struct ZoneStateApiResponse {
 #[derive(Deserialize, Debug)]
 #[allow(non_snake_case)]
 pub struct ZoneStateSettingApiResponse {
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub deviceType: String,
     pub temperature: Option<ZoneStateSettingTemperatureApiResponse>,
 }

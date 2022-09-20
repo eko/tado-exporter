@@ -1,13 +1,16 @@
 FROM rust:latest AS builder
 
 WORKDIR /usr/src/tado-exporter
-COPY . .
 
 RUN apt-get update && \
     apt-get -y install ca-certificates libssl-dev musl-tools && \
     rm -rf /var/lib/apt/lists/*
 
 RUN rustup target add x86_64-unknown-linux-musl
+
+COPY Cargo.* .
+COPY src/ ./src
+
 RUN cargo build --target x86_64-unknown-linux-musl --release
 
 FROM scratch

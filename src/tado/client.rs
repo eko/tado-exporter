@@ -59,23 +59,25 @@ impl Client {
             .http_client
             .post(AUTH_URL.clone())
             .form(&params)
-            .send().await?;
+            .send()
+            .await?;
 
-        Ok(resp.json::<AuthApiResponse>().await?)
+        resp.json::<AuthApiResponse>().await
     }
 
     async fn get(&self, url: reqwest::Url) -> Result<reqwest::Response, reqwest::Error> {
         self.http_client
             .get(url)
             .header("Authorization", format!("Bearer: {}", self.access_token))
-            .send().await
+            .send()
+            .await
     }
 
     async fn me(&self) -> Result<MeApiResponse, reqwest::Error> {
         let url = self.base_url.join("/api/v2/me").unwrap();
         let resp = self.get(url).await?;
 
-        Ok(resp.json::<MeApiResponse>().await?)
+        resp.json::<MeApiResponse>().await
     }
 
     async fn zones(&mut self) -> Result<Vec<ZonesApiResponse>, reqwest::Error> {
@@ -84,7 +86,7 @@ impl Client {
 
         let resp = self.get(url).await?;
 
-        Ok(resp.json::<Vec<ZonesApiResponse>>().await?)
+        resp.json::<Vec<ZonesApiResponse>>().await
     }
 
     async fn zone_state(&mut self, zone_id: i32) -> Result<ZoneStateApiResponse, reqwest::Error> {
@@ -93,7 +95,7 @@ impl Client {
 
         let resp = self.get(url).await?;
 
-        Ok(resp.json::<ZoneStateApiResponse>().await?)
+        resp.json::<ZoneStateApiResponse>().await
     }
 
     async fn weather(&self) -> Result<WeatherApiResponse, reqwest::Error> {
@@ -102,7 +104,7 @@ impl Client {
 
         let resp = self.get(url).await?;
 
-        Ok(resp.json::<WeatherApiResponse>().await?)
+        resp.json::<WeatherApiResponse>().await
     }
 
     pub async fn retrieve_zones(&mut self) -> Vec<ZoneStateResponse> {
@@ -151,13 +153,13 @@ impl Client {
                 }
             };
 
-            response.push(ZoneStateResponse{
+            response.push(ZoneStateResponse {
                 name: zone.name,
                 state_response: zone_state_response,
             });
         }
 
-        return response;
+        response
     }
 
     pub async fn retrieve_weather(&mut self) -> Option<WeatherApiResponse> {
