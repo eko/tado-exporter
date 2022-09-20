@@ -1,13 +1,17 @@
-use log::{info, error};
-use std::vec::Vec;
+use log::{error, info};
 use reqwest;
+use std::vec::Vec;
 
-use super::model::{AuthApiResponse, MeApiResponse, ZonesApiResponse, ZoneStateApiResponse, ZoneStateResponse};
+use super::model::{
+    AuthApiResponse, MeApiResponse, ZoneStateApiResponse, ZoneStateResponse, ZonesApiResponse,
+};
 
-const AUTH_URL: &'static str = "https://auth.tado.com/oauth/token";
+const AUTH_URL: &str = "https://auth.tado.com/oauth/token";
 
 macro_rules! format_base_url {
-    () => { "https://my.tado.com{endpoint}" };
+    () => {
+        "https://my.tado.com{endpoint}"
+    };
 }
 
 pub struct Client {
@@ -23,9 +27,9 @@ impl Client {
     pub fn new(username: String, password: String, client_secret: String) -> Client {
         Client {
             http_client: reqwest::Client::new(),
-            username: username,
-            password: password,
-            client_secret: client_secret,
+            username,
+            password,
+            client_secret,
             access_token: String::default(),
             home_id: 0,
         }
@@ -41,26 +45,29 @@ impl Client {
             ("password", self.password.as_str()),
         ];
 
-        let resp = self.http_client
+        let resp = self
+            .http_client
             .post(reqwest::Url::parse(AUTH_URL).unwrap())
             .form(&params)
-            .send().await?;
+            .send()
+            .await?;
 
-        Ok(resp.json::<AuthApiResponse>().await?)
+        resp.json::<AuthApiResponse>().await
     }
 
     async fn get(&self, url: String) -> Result<reqwest::Response, reqwest::Error> {
         self.http_client
             .get(reqwest::Url::parse(url.as_str()).unwrap())
             .header("Authorization", format!("Bearer: {}", self.access_token))
-            .send().await
+            .send()
+            .await
     }
 
     async fn me(&self) -> Result<MeApiResponse, reqwest::Error> {
         let url = format!(format_base_url!(), endpoint = "/api/v2/me");
         let resp = self.get(url).await?;
 
-        Ok(resp.json::<MeApiResponse>().await?)
+        resp.json::<MeApiResponse>().await
     }
 
     async fn zones(&mut self) -> Result<Vec<ZonesApiResponse>, reqwest::Error> {
@@ -69,7 +76,7 @@ impl Client {
 
         let resp = self.get(url).await?;
 
-        Ok(resp.json::<Vec<ZonesApiResponse>>().await?)
+        resp.json::<Vec<ZonesApiResponse>>().await
     }
 
     async fn zone_state(&mut self, zone_id: i32) -> Result<ZoneStateApiResponse, reqwest::Error> {
@@ -78,7 +85,7 @@ impl Client {
 
         let resp = self.get(url).await?;
 
-        Ok(resp.json::<ZoneStateApiResponse>().await?)
+        resp.json::<ZoneStateApiResponse>().await
     }
 
     pub async fn retrieve(&mut self) -> Vec<ZoneStateResponse> {
@@ -127,12 +134,12 @@ impl Client {
                 }
             };
 
-            response.push(ZoneStateResponse{
+            response.push(ZoneStateResponse {
                 name: zone.name,
                 state_response: zone_state_response,
             });
         }
 
-        return response;
+        response
     }
 }
