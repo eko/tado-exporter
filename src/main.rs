@@ -46,7 +46,7 @@ fn run_ticker(config: config_loader::Config) {
 
         info!("waiting for the first tick in {} seconds...", config.ticker);
 
-        let ticker = Ticker::new(0.., Duration::from_secs(config.ticker));
+        let ticker = Ticker::new((0..).cycle(), Duration::from_secs(config.ticker));
         for _ in ticker {
             metrics::set(tado_client.retrieve().await);
         }
