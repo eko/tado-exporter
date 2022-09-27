@@ -16,4 +16,4 @@ serde_json = "1.0.85"
 ticker = "0.1.1"
 log = "0.4.17"
 env_logger = "0.9.1"
-openssl = { version = "0.10.41", features = ["vendored"] }
+openssl = { version = "0.10.42", features = ["vendored"] }
