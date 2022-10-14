@@ -27,6 +27,8 @@ pub struct ZoneStateApiResponse {
     pub setting: ZoneStateSettingApiResponse,
     pub activityDataPoints: ZoneStateActivityDataPointsApiResponse,
     pub sensorDataPoints: ZoneStateSensorDataPointsApiResponse,
+    // pub openWindow: Option<ZoneStateOpenWindowApiResponse>,
+    // pub openWindowDetection: Option<?>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -76,6 +78,23 @@ pub struct SensorDataPointsInsideTemperatureApiResponse {
 #[derive(Deserialize, Debug)]
 pub struct SensorDataPointsHumidityApiResponse {
     pub percentage: f64,
+}
+
+#[derive(Deserialize, Debug, PartialEq)]
+#[allow(non_snake_case)]
+pub struct WeatherApiResponse {
+    pub solarIntensity: WeatherSolarIntensityApiResponse,
+    pub outsideTemperature: WeatherOutsideTemperatureApiResponse,
+}
+#[derive(Deserialize, Debug, PartialEq)]
+pub struct WeatherSolarIntensityApiResponse {
+    pub percentage: f64,
+}
+
+#[derive(Deserialize, Debug, PartialEq)]
+pub struct WeatherOutsideTemperatureApiResponse {
+    pub fahrenheit: f64,
+    pub celsius: f64,
 }
 
 pub struct ZoneStateResponse {

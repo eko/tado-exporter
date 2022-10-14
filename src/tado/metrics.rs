@@ -1,6 +1,6 @@
 use std::convert::Infallible;
 
-use super::model::ZoneStateResponse;
+use super::model::{WeatherApiResponse, ZoneStateResponse};
 
 use hyper::{header::CONTENT_TYPE, Body, Request, Response};
 use lazy_static::lazy_static;
@@ -38,9 +38,21 @@ lazy_static! {
         &["zone", "type"]
     )
     .unwrap();
+    pub static ref WEATHER_SOLAR_INTENSITY: GaugeVec = register_gauge_vec!(
+        "weather_solar_intensity",
+        "Solar intensity outside the house.",
+        &[]
+    )
+    .unwrap();
+    pub static ref WEATHER_OUTSIDE_TEMPERATURE: GaugeVec = register_gauge_vec!(
+        "weather_outside_temperature",
+        "Temperature outside the house.",
+        &["unit"]
+    )
+    .unwrap();
 }
 
-pub fn set(zones: Vec<ZoneStateResponse>) {
+pub fn set_zones(zones: Vec<ZoneStateResponse>) {
     for zone in zones {
         let device_type: String = zone.state_response.setting.deviceType;
 
@@ -159,6 +171,41 @@ pub fn set(zones: Vec<ZoneStateResponse>) {
     }
 }
 
+pub fn set_weather(weather_response: Option<WeatherApiResponse>) {
+    if let Some(weather) = weather_response {
+        // setting solar intensity
+        let solar_intensity_percentage = weather.solarIntensity.percentage;
+
+        WEATHER_SOLAR_INTENSITY
+            .with_label_values(&[])
+            .set(weather.solarIntensity.percentage);
+        info!(
+            "-> setting solar intensity (percentage): {}",
+            solar_intensity_percentage
+        );
+
+        // setting outside temperature
+        let outside_temperature_celsius = weather.outsideTemperature.celsius;
+        let outside_temperature_fahrenheit = weather.outsideTemperature.fahrenheit;
+
+        WEATHER_OUTSIDE_TEMPERATURE
+            .with_label_values(&["celsius"])
+            .set(outside_temperature_celsius);
+        info!(
+            "-> setting outside temperature (celsius): {}",
+            outside_temperature_celsius
+        );
+
+        WEATHER_OUTSIDE_TEMPERATURE
+            .with_label_values(&["fahrenheit"])
+            .set(outside_temperature_fahrenheit);
+        info!(
+            "-> setting outside temperature (fahrenheit): {}",
+            outside_temperature_fahrenheit
+        );
+    }
+}
+
 pub async fn renderer(_req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let metrics = prometheus::gather();
     let mut buffer = vec![];
@@ -173,4 +220,85 @@ pub async fn renderer(_req: Request<Body>) -> Result<Response<Body>, Infallible>
         .unwrap();
 
     Ok(response)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::tado::model::{
+        WeatherOutsideTemperatureApiResponse, WeatherSolarIntensityApiResponse,
+    };
+
+    use super::*;
+
+    #[test]
+    fn test_set_weather_some() {
+        /*
+        GIVEN a weather response
+        WHEN set_weather is called
+        THEN the metrics are set
+        */
+
+        // GIVEN
+        let weather_response = WeatherApiResponse {
+            solarIntensity: WeatherSolarIntensityApiResponse { percentage: 100.0 },
+            outsideTemperature: WeatherOutsideTemperatureApiResponse {
+                celsius: 20.0,
+                fahrenheit: 68.0,
+            },
+        };
+
+        // WHEN
+        set_weather(Some(weather_response));
+
+        // THEN
+        // Check metrics
+        let metrics = prometheus::gather();
+
+        assert_eq!(metrics.len(), 2);
+        assert_eq!(metrics[0].get_name(), "weather_outside_temperature");
+        assert_eq!(metrics[1].get_name(), "weather_solar_intensity");
+
+        // Check outside temperature metric
+        let outside_temperature_metric = metrics[0].get_metric();
+
+        assert_eq!(outside_temperature_metric.len(), 2);
+
+        let outside_temp_celsius = &outside_temperature_metric[0];
+        let outside_temp_fahrenheit = &outside_temperature_metric[1];
+
+        assert_eq!(outside_temp_celsius.get_label().len(), 1);
+        assert_eq!(outside_temp_celsius.get_label()[0].get_name(), "unit");
+        assert_eq!(outside_temp_celsius.get_label()[0].get_value(), "celsius");
+        assert_eq!(outside_temp_celsius.get_gauge().get_value(), 20.0);
+        assert_eq!(outside_temp_fahrenheit.get_label().len(), 1);
+        assert_eq!(outside_temp_fahrenheit.get_label()[0].get_name(), "unit");
+        assert_eq!(
+            outside_temp_fahrenheit.get_label()[0].get_value(),
+            "fahrenheit"
+        );
+        assert_eq!(outside_temp_fahrenheit.get_gauge().get_value(), 68.0);
+
+        // Check solar intensity metric
+        let solar_intensity_metric = metrics[1].get_metric();
+
+        assert_eq!(solar_intensity_metric.len(), 1);
+        assert_eq!(solar_intensity_metric[0].get_gauge().get_value(), 100.0);
+    }
+
+    #[test]
+    fn test_set_weather_none() {
+        /*
+        GIVEN no weather response
+        WHEN set_weather is called
+        THEN the metrics are not set
+        */
+
+        // WHEN
+        set_weather(None);
+
+        // THEN
+        let metrics = prometheus::gather();
+
+        assert_eq!(metrics.len(), 0);
+    }
 }
