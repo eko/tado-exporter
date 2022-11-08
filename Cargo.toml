@@ -21,4 +21,4 @@ openssl = { version = "0.10.42", features = ["vendored"] }
 [dev-dependencies]
 actix-rt = "2.7.0"
 rstest = "0.15.0"
-wiremock = "0.5.14"
+wiremock = "0.5.15"
