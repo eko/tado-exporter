@@ -21,17 +21,17 @@ pub struct ZonesApiResponse {
     pub name: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq)]
 #[allow(non_snake_case)]
 pub struct ZoneStateApiResponse {
     pub setting: ZoneStateSettingApiResponse,
     pub activityDataPoints: ZoneStateActivityDataPointsApiResponse,
     pub sensorDataPoints: ZoneStateSensorDataPointsApiResponse,
     // pub openWindow: Option<ZoneStateOpenWindowApiResponse>,
-    // pub openWindowDetection: Option<?>,
+    pub openWindowDetection: Option<bool>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq)]
 #[allow(non_snake_case)]
 pub struct ZoneStateSettingApiResponse {
     #[serde(rename = "type")]
@@ -39,43 +39,43 @@ pub struct ZoneStateSettingApiResponse {
     pub temperature: Option<ZoneStateSettingTemperatureApiResponse>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq)]
 pub struct ZoneStateSettingTemperatureApiResponse {
     pub celsius: f64,
     pub fahrenheit: f64,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq)]
 #[allow(non_snake_case)]
 pub struct ZoneStateActivityDataPointsApiResponse {
     pub heatingPower: Option<ActivityDataPointsHeatingPowerApiResponse>,
     pub acPower: Option<ActivityDataPointsAcPowerApiResponse>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq)]
 pub struct ActivityDataPointsHeatingPowerApiResponse {
     pub percentage: f64,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq)]
 pub struct ActivityDataPointsAcPowerApiResponse {
     pub value: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq)]
 #[allow(non_snake_case)]
 pub struct ZoneStateSensorDataPointsApiResponse {
     pub insideTemperature: Option<SensorDataPointsInsideTemperatureApiResponse>,
     pub humidity: Option<SensorDataPointsHumidityApiResponse>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq)]
 pub struct SensorDataPointsInsideTemperatureApiResponse {
     pub celsius: f64,
     pub fahrenheit: f64,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq)]
 pub struct SensorDataPointsHumidityApiResponse {
     pub percentage: f64,
 }
