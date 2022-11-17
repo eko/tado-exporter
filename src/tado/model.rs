@@ -57,7 +57,7 @@ pub struct ActivityDataPointsHeatingPowerApiResponse {
     pub percentage: f64,
 }
 
-#[derive(Deserialize, Debug, PartialEq)]
+#[derive(Deserialize, Debug, PartialEq, Eq)]
 pub struct ActivityDataPointsAcPowerApiResponse {
     pub value: String,
 }
