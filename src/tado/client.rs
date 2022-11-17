@@ -202,11 +202,16 @@ impl Client {
 }
 
 #[cfg(test)]
+
 mod tests {
     use super::*;
 
     use crate::tado::model::{
-        WeatherOutsideTemperatureApiResponse, WeatherSolarIntensityApiResponse,
+        ActivityDataPointsHeatingPowerApiResponse, SensorDataPointsHumidityApiResponse,
+        SensorDataPointsInsideTemperatureApiResponse, WeatherOutsideTemperatureApiResponse,
+        WeatherSolarIntensityApiResponse, ZoneStateApiResponse,
+        ZoneStateSensorDataPointsApiResponse, ZoneStateSettingApiResponse,
+        ZoneStateSettingApiResponse, ZoneStateSettingTemperatureApiResponse,
     };
 
     use rstest::*;
@@ -302,6 +307,142 @@ mod tests {
 
         // WHEN
         let actual = client.weather().await.unwrap();
+
+        // THEN
+        assert_eq!(actual, expected);
+    }
+
+    #[rstest(response_str, expected,
+        case(
+            r#"{
+                "setting":{
+                  "type":"tado",
+                  "temperature":{
+                    "celsius":21.53,
+                    "fahrenheit":70.75
+                  }
+                },
+                "activityDataPoints":{
+                  "heatingPower":{
+                    "percentage":0.0
+                  },
+                  "acPower":null
+                },
+                "openWindowDetection":true,
+                "sensorDataPoints":{
+                  "insideTemperature":{
+                    "celsius":25.0,
+                    "fahrenheit":77.0
+                  },
+                  "humidity":{
+                    "percentage":75.0
+                  }
+                }
+              }"#,
+            ZoneStateApiResponse {
+                setting : ZoneStateSettingApiResponse {
+                    deviceType: "tado".to_string(),
+                    temperature: Some(ZoneStateSettingTemperatureApiResponse {
+                        celsius: 21.53,
+                        fahrenheit: 70.75
+                    })
+                },
+                activityDataPoints : ZoneStateActivityDataPointsApiResponse {
+                    heatingPower : Some(ActivityDataPointsHeatingPowerApiResponse {
+                        percentage: 0.0
+                    }),
+                    acPower : None
+                },
+                openWindowDetection: Some(true),
+                sensorDataPoints: ZoneStateSensorDataPointsApiResponse {
+                    insideTemperature : Some(SensorDataPointsInsideTemperatureApiResponse {
+                        celsius: 25.0,
+                        fahrenheit: 77.0
+                    }),
+                    humidity : Some(SensorDataPointsHumidityApiResponse {
+                        percentage: 75.0
+                    })
+                }
+            }
+        ),
+        case(
+            r#"{
+                "setting":{
+                  "type":"tado",
+                  "temperature":{
+                    "celsius":21.53,
+                    "fahrenheit":70.75
+                  }
+                },
+                "activityDataPoints":{
+                  "heatingPower":{
+                    "percentage":0.0
+                  },
+                  "acPower":null
+                },
+                "sensorDataPoints":{
+                  "insideTemperature":{
+                    "celsius":25.0,
+                    "fahrenheit":77.0
+                  },
+                  "humidity":{
+                    "percentage":75.0
+                  }
+                }
+              }"#,
+            ZoneStateApiResponse {
+                setting : ZoneStateSettingApiResponse {
+                    deviceType: "tado".to_string(),
+                    temperature: Some(ZoneStateSettingTemperatureApiResponse {
+                        celsius: 21.53,
+                        fahrenheit: 70.75
+                    })
+                },
+                activityDataPoints : ZoneStateActivityDataPointsApiResponse {
+                    heatingPower : Some(ActivityDataPointsHeatingPowerApiResponse {
+                        percentage: 0.0
+                    }),
+                    acPower : None
+                },
+                openWindowDetection: None,
+                sensorDataPoints: ZoneStateSensorDataPointsApiResponse {
+                    insideTemperature : Some(SensorDataPointsInsideTemperatureApiResponse {
+                        celsius: 25.0,
+                        fahrenheit: 77.0
+                    }),
+                    humidity : Some(SensorDataPointsHumidityApiResponse {
+                        percentage: 75.0
+                    })
+                }
+            }
+        )
+    )]
+    #[actix_rt::test]
+    async fn test_zone_state(response_str: &str, expected: ZoneStateApiResponse) {
+        /*
+        GIVEN an OSM client
+        WHEN calling the zone_state() function
+        THEN returns the zone state
+        */
+
+        // GIVEN
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("GET"))
+            .and(path("api/v2/homes/0/zones/0/state"))
+            .respond_with(ResponseTemplate::new(200).set_body_raw(response_str, "application/json"))
+            .mount(&mock_server)
+            .await;
+
+        let mut client = Client::with_base_url(
+            mock_server.uri().parse().unwrap(),
+            "username".to_string(),
+            "passwored".to_string(),
+            "client_secret".to_string(),
+        );
+
+        // WHEN
+        let actual = client.zone_state(0).await.unwrap();
 
         // THEN
         assert_eq!(actual, expected);
