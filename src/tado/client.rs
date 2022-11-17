@@ -209,9 +209,9 @@ mod tests {
     use crate::tado::model::{
         ActivityDataPointsHeatingPowerApiResponse, SensorDataPointsHumidityApiResponse,
         SensorDataPointsInsideTemperatureApiResponse, WeatherOutsideTemperatureApiResponse,
-        WeatherSolarIntensityApiResponse, ZoneStateApiResponse,
-        ZoneStateSensorDataPointsApiResponse, ZoneStateSettingApiResponse,
-        ZoneStateSettingApiResponse, ZoneStateSettingTemperatureApiResponse,
+        WeatherSolarIntensityApiResponse, ZoneStateActivityDataPointsApiResponse,
+        ZoneStateApiResponse, ZoneStateSensorDataPointsApiResponse, ZoneStateSettingApiResponse,
+        ZoneStateSettingTemperatureApiResponse,
     };
 
     use rstest::*;
