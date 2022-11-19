@@ -328,7 +328,7 @@ mod tests {
                   },
                   "acPower":null
                 },
-                "openWindowDetection":true,
+                "openWindowDetected":true,
                 "sensorDataPoints":{
                   "insideTemperature":{
                     "celsius":25.0,
@@ -353,7 +353,7 @@ mod tests {
                     }),
                     acPower : None
                 },
-                openWindowDetection: Some(true),
+                openWindowDetected: Some(true),
                 sensorDataPoints: ZoneStateSensorDataPointsApiResponse {
                     insideTemperature : Some(SensorDataPointsInsideTemperatureApiResponse {
                         celsius: 25.0,
@@ -404,7 +404,7 @@ mod tests {
                     }),
                     acPower : None
                 },
-                openWindowDetection: None,
+                openWindowDetected: None,
                 sensorDataPoints: ZoneStateSensorDataPointsApiResponse {
                     insideTemperature : Some(SensorDataPointsInsideTemperatureApiResponse {
                         celsius: 25.0,

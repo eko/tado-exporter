@@ -28,7 +28,7 @@ pub struct ZoneStateApiResponse {
     pub activityDataPoints: ZoneStateActivityDataPointsApiResponse,
     pub sensorDataPoints: ZoneStateSensorDataPointsApiResponse,
     // pub openWindow: Option<ZoneStateOpenWindowApiResponse>,
-    pub openWindowDetection: Option<bool>,
+    pub openWindowDetected: Option<bool>,
 }
 
 #[derive(Deserialize, Debug, PartialEq)]
