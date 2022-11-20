@@ -50,6 +50,12 @@ lazy_static! {
         &["unit"]
     )
     .unwrap();
+    pub static ref SENSOR_WINDOW_OPENED: GaugeVec = register_gauge_vec!(
+        "tado_sensor_window_opened",
+        "1 if the sensor detected a window is open, 0 otherwise.",
+        &["zone", "type"]
+    )
+    .unwrap();
 }
 
 pub fn set_zones(zones: Vec<ZoneStateResponse>) {
@@ -93,6 +99,29 @@ pub fn set_zones(zones: Vec<ZoneStateResponse>) {
                 zone.name,
                 device_type.as_str()
             );
+        }
+
+        // If openWindowDetected is not None, this means that a window is open.
+        if zone.state_response.openWindowDetected.is_some() {
+            info!(
+                "-> {} ({}) -> window opened: {}",
+                zone.name,
+                device_type.as_str(),
+                true
+            );
+            SENSOR_WINDOW_OPENED
+                .with_label_values(&[zone.name.as_str(), device_type.as_str()])
+                .set(1.0);
+        } else {
+            info!(
+                "-> {} ({}) -> window opened: {}",
+                zone.name,
+                device_type.as_str(),
+                false
+            );
+            SENSOR_WINDOW_OPENED
+                .with_label_values(&[zone.name.as_str(), device_type.as_str()])
+                .set(0.0);
         }
 
         // sensor temperature
