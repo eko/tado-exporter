@@ -210,8 +210,8 @@ mod tests {
         ActivityDataPointsHeatingPowerApiResponse, SensorDataPointsHumidityApiResponse,
         SensorDataPointsInsideTemperatureApiResponse, WeatherOutsideTemperatureApiResponse,
         WeatherSolarIntensityApiResponse, ZoneStateActivityDataPointsApiResponse,
-        ZoneStateApiResponse, ZoneStateSensorDataPointsApiResponse, ZoneStateSettingApiResponse,
-        ZoneStateSettingTemperatureApiResponse, ZoneStateOpenWindowApiResponse
+        ZoneStateApiResponse, ZoneStateOpenWindowApiResponse, ZoneStateSensorDataPointsApiResponse,
+        ZoneStateSettingApiResponse, ZoneStateSettingTemperatureApiResponse,
     };
 
     use rstest::*;

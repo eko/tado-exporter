@@ -30,10 +30,10 @@ pub struct ZoneStateApiResponse {
     pub openWindow: Option<ZoneStateOpenWindowApiResponse>,
 }
 
-#[derive(Deserialize, Debug, PartialEq)]
+#[derive(Deserialize, Debug, PartialEq, Eq)]
 #[allow(non_snake_case)]
 pub struct ZoneStateOpenWindowApiResponse {
-    pub detectedTime: String,  // RFC 3339 timestamp
+    pub detectedTime: String, // RFC 3339 timestamp
     pub durationInSeconds: i32,
     pub expiry: String,
     pub remainingTimeInSeconds: i32,
