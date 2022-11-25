@@ -210,8 +210,8 @@ mod tests {
         ActivityDataPointsHeatingPowerApiResponse, SensorDataPointsHumidityApiResponse,
         SensorDataPointsInsideTemperatureApiResponse, WeatherOutsideTemperatureApiResponse,
         WeatherSolarIntensityApiResponse, ZoneStateActivityDataPointsApiResponse,
-        ZoneStateApiResponse, ZoneStateSensorDataPointsApiResponse, ZoneStateSettingApiResponse,
-        ZoneStateSettingTemperatureApiResponse,
+        ZoneStateApiResponse, ZoneStateOpenWindowApiResponse, ZoneStateSensorDataPointsApiResponse,
+        ZoneStateSettingApiResponse, ZoneStateSettingTemperatureApiResponse,
     };
 
     use rstest::*;
@@ -328,7 +328,6 @@ mod tests {
                   },
                   "acPower":null
                 },
-                "openWindowDetected":true,
                 "sensorDataPoints":{
                   "insideTemperature":{
                     "celsius":25.0,
@@ -353,7 +352,7 @@ mod tests {
                     }),
                     acPower : None
                 },
-                openWindowDetected: Some(true),
+                openWindow: None,
                 sensorDataPoints: ZoneStateSensorDataPointsApiResponse {
                     insideTemperature : Some(SensorDataPointsInsideTemperatureApiResponse {
                         celsius: 25.0,
@@ -373,6 +372,12 @@ mod tests {
                     "celsius":21.53,
                     "fahrenheit":70.75
                   }
+                },
+                "openWindow":{
+                    "detectedTime":"2022-11-21T11:15:32Z",
+                    "durationInSeconds":900,
+                    "expiry":"2022-11-21T11:30:32Z",
+                    "remainingTimeInSeconds":662
                 },
                 "activityDataPoints":{
                   "heatingPower":{
@@ -398,13 +403,18 @@ mod tests {
                         fahrenheit: 70.75
                     })
                 },
+                openWindow : Some(ZoneStateOpenWindowApiResponse {
+                    detectedTime: "2022-11-21T11:15:32Z".to_string(),
+                    durationInSeconds: 900,
+                    expiry: "2022-11-21T11:30:32Z".to_string(),
+                    remainingTimeInSeconds: 662
+                }),
                 activityDataPoints : ZoneStateActivityDataPointsApiResponse {
                     heatingPower : Some(ActivityDataPointsHeatingPowerApiResponse {
                         percentage: 0.0
                     }),
                     acPower : None
                 },
-                openWindowDetected: None,
                 sensorDataPoints: ZoneStateSensorDataPointsApiResponse {
                     insideTemperature : Some(SensorDataPointsInsideTemperatureApiResponse {
                         celsius: 25.0,

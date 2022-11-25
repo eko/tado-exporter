@@ -27,8 +27,16 @@ pub struct ZoneStateApiResponse {
     pub setting: ZoneStateSettingApiResponse,
     pub activityDataPoints: ZoneStateActivityDataPointsApiResponse,
     pub sensorDataPoints: ZoneStateSensorDataPointsApiResponse,
-    // pub openWindow: Option<ZoneStateOpenWindowApiResponse>,
-    pub openWindowDetected: Option<bool>,
+    pub openWindow: Option<ZoneStateOpenWindowApiResponse>,
+}
+
+#[derive(Deserialize, Debug, PartialEq, Eq)]
+#[allow(non_snake_case)]
+pub struct ZoneStateOpenWindowApiResponse {
+    pub detectedTime: String, // RFC 3339 timestamp
+    pub durationInSeconds: i32,
+    pub expiry: String,
+    pub remainingTimeInSeconds: i32,
 }
 
 #[derive(Deserialize, Debug, PartialEq)]

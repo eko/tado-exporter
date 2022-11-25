@@ -102,7 +102,7 @@ pub fn set_zones(zones: Vec<ZoneStateResponse>) {
         }
 
         // If openWindowDetected is not None, this means that a window is open.
-        if zone.state_response.openWindowDetected.is_some() {
+        if zone.state_response.openWindow.is_some() {
             info!(
                 "-> {} ({}) -> window opened: {}",
                 zone.name,
