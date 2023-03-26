@@ -11,11 +11,11 @@ EVN=
 if [ "$ARCH" = "amd64" ]
 then
     ENV="x86_64"
-elif [ "$ARCH" = "armv7" ]
+elif [ "$ARCH" = "arm" ]
 then
     ENV=armv7
 else
-    echo "Wrong ARCH. Not Supported"
+    echo "Wrong ARCH: $ARCH. Not Supported"
     exit 2
 fi
 
