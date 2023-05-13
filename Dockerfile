@@ -12,7 +12,7 @@ RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
 
 RUN apt update && \
     # apt-get -y install ca-certificates libssl-dev musl-tools gcc-arm* libfindbin-libs-perl perl make && \
-    apt install -y ca-certificates libssl-dev libc6-dev-armhf-cross gcc-arm* libfindbin-libs-perl perl make patchelf && \
+    apt install -y ca-certificates libssl-dev libc6-dev-armhf-cross gcc-arm-linux-gnueabihf libfindbin-libs-perl make patchelf && \
     rm -rf /var/lib/apt/lists/*
 
 
