@@ -32,14 +32,18 @@ ENV CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc CC
 RUN cargo build --target armv7-unknown-linux-gnueabihf --release
 #RUN build.sh $TARGETARCH
 
-#FROM scratch
-# FROM --platform=$BUILDPLATFORM alpine:latest
-# LABEL name="tado-exporter"
+# FROM scratch
+# FROM --platform=$TARGETPLATFORM alpine:latest
+FROM --platform=$TARGETPLATFORM debian:bullseye-slim
+LABEL name="tado-exporter"
 
-# COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-# COPY --from=builder /usr/src/tado-exporter/target/armv7-unknown-linux-gnueabihf/release/tado-exporter /
+RUN apt update && \
+    apt install patchelf
 
-ENV LD_LIBRARY_PATH="/usr/arm-linux-gnueabihf/lib:${LD_LIBRARY_PATH}"
-RUN patchelf --set-interpreter /usr/arm-linux-gnueabihf/lib/ld-linux-armhf.so.3 /usr/src/tado-exporter/target/armv7-unknown-linux-gnueabihf/release/tado-exporter
+ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+ COPY --from=builder /usr/src/tado-exporter/target/armv7-unknown-linux-gnueabihf/release/tado-exporter /
 
-CMD ["/bin/bash"]
+# ENV LD_LIBRARY_PATH="/usr/arm-linux-gnueabihf/lib:${LD_LIBRARY_PATH}"
+RUN patchelf --set-interpreter /lib/ld-linux-armhf.so.3 /tado-exporter
+
+CMD ["/tado-exporter"]
