@@ -33,7 +33,6 @@ RUN cargo build --target armv7-unknown-linux-gnueabihf --release
 #RUN build.sh $TARGETARCH
 
 # FROM scratch
-# FROM --platform=$TARGETPLATFORM alpine:latest
 FROM --platform=$TARGETPLATFORM debian:bullseye-slim
 LABEL name="tado-exporter"
 
