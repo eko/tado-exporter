@@ -13,16 +13,15 @@ COPY src/ ./src
 RUN rustup toolchain install stable
 
 FROM builder as builder-amd64
-RUN rustup target add x86_64-unknown-linux-musl
-ENV TARGET=x86_64-unknown-linux-musl
+ENV TARGET=x86_64-unknown-linux-gnu
+RUN rustup target add ${TARGET}
 
 
 FROM builder as builder-armv7
-RUN rustup target add armv7-unknown-linux-gnueabihf
+ENV TARGET=armv7-unknown-linux-gnueabihf
+RUN rustup target add ${TARGET}
 
 ENV CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc CC_armv7_unknown_Linux_gnueabihf=arm-linux-gnueabihf-gcc CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++
-ENV TARGET=armv7-unknown-linux-gnueabihf
-
 
 FROM builder-$TARGETARCH$TARGETVARIANT as final-builder
 
