@@ -14,17 +14,17 @@ RUN rustup toolchain install stable
 
 FROM builder as builder-amd64
 ENV TARGET=x86_64-unknown-linux-gnu
-RUN rustup target add ${TARGET}
 
+FROM builder as builder-arm64
+ENV TARGET=aarch64-unknown-linux-gnu
 
 FROM builder as builder-armv7
 ENV TARGET=armv7-unknown-linux-gnueabihf
-RUN rustup target add ${TARGET}
 
 ENV CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc CC_armv7_unknown_Linux_gnueabihf=arm-linux-gnueabihf-gcc CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++
 
 FROM builder-$TARGETARCH$TARGETVARIANT as final-builder
-
+RUN rustup target add ${TARGET}
 RUN cargo build --target ${TARGET} --release
 
 FROM --platform=$TARGETPLATFORM debian:bullseye-slim
