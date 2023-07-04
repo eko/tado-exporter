@@ -25,7 +25,7 @@ ENV CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc CC
 
 FROM builder-$TARGETARCH$TARGETVARIANT as final-builder
 RUN rustup target add ${TARGET}
-RUN cargo build --target ${TARGET} --release
+RUN cargo build --target ${TARGET} --release --target-dir /usr/build/tado-exporter/bin
 
 FROM --platform=$TARGETPLATFORM debian:bullseye-slim
 LABEL name="tado-exporter"
@@ -48,8 +48,8 @@ RUN apt update && \
     apt install patchelf
 
 COPY --from=final-builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=final-builder /usr/src/tado-exporter/target/armv7-unknown-linux-gnueabihf/release/tado-exporter /
+COPY --from=final-builder /usr/build/tado-exporter/bin /
 
-RUN patchelf --set-interpreter /lib/ld-linux-armhf.so.3 /tado-exporter
+RUN if [ "$TARGETARCH$TARGETVARIANT" -eq "armv7"]; then patchelf --set-interpreter /lib/ld-linux-armhf.so.3 /tado-exporter; fi
 
 CMD ["/tado-exporter"]
