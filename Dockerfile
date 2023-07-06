@@ -2,7 +2,7 @@
 FROM --platform=$BUILDPLATFORM rust:slim-bullseye AS builder
 
 RUN apt update && \
-    apt install -y ca-certificates libssl-dev libfindbin-libs-perl make patchelf
+    apt install -y ca-certificates libssl-dev libfindbin-libs-perl make
 
 WORKDIR /usr/src/tado-exporter
 
@@ -16,6 +16,8 @@ ENV TARGET=x86_64-unknown-linux-gnu
 
 FROM builder as builder-arm64
 ENV TARGET=aarch64-unknown-linux-gnu
+RUN apt update && \
+    apt install -y gcc-aarch64-linux-gnu
 
 FROM builder as builder-armv7
 ENV TARGET=armv7-unknown-linux-gnueabihf
