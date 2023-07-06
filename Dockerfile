@@ -7,7 +7,6 @@ RUN apt update && \
 
 WORKDIR /usr/src/tado-exporter
 
-COPY scripts/ ./
 COPY Cargo.* .
 COPY src/ ./src
 RUN rustup toolchain install stable
