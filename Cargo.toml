@@ -19,6 +19,6 @@ env_logger = "0.10.0"
 openssl = { version = "0.10.56", features = ["vendored"] }
 
 [dev-dependencies]
-actix-rt = "2.8.0"
+actix-rt = "2.9.0"
 rstest = "0.17.0"
 wiremock = "0.5.19"
