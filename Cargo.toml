@@ -8,7 +8,7 @@ edition = "2018"
 hyper = { version = "0.14.28", features = ["server", "runtime", "http1", "http2"] }
 tokio = { version = "1.37.0", features = ["full"] }
 lazy_static = "1.4.0"
-prometheus = "0.13.3"
+prometheus = "0.13.4"
 reqwest = { version = "0.12.4", features = ["json"] }
 serde = "1.0.202"
 serde_derive = "1.0.123"
