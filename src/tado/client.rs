@@ -68,7 +68,7 @@ impl Client {
     async fn get(&self, url: reqwest::Url) -> Result<reqwest::Response, reqwest::Error> {
         self.http_client
             .get(url)
-            .header("Authorization", format!("Bearer: {}", self.access_token))
+            .header("Authorization", format!("Bearer {}", self.access_token))
             .send()
             .await
     }
