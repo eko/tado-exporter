@@ -9,7 +9,6 @@ use hyper::{service::make_service_fn, service::service_fn, Server};
 use log::{error, info};
 use std::convert::Infallible;
 use std::time::Duration;
-use ticker::Ticker;
 
 use config::loader as config_loader;
 use tado::client::Client as TadoClient;
@@ -46,8 +45,13 @@ fn run_ticker(config: config_loader::Config) {
 
         info!("waiting for the first tick in {} seconds...", config.ticker);
 
-        let ticker = Ticker::new((0..).cycle(), Duration::from_secs(config.ticker));
-        for _ in ticker {
+        // Use a ticker instead of sleeping within the loop.
+        // This prevents drift as the ticker keeps counting down during refresh, unlike sleep.
+        let mut ticker = tokio::time::interval(Duration::from_secs(config.ticker));
+        ticker.tick().await;
+
+        loop {
+            ticker.tick().await;
             metrics::set_zones(tado_client.retrieve_zones().await);
             metrics::set_weather(tado_client.retrieve_weather().await);
         }
