@@ -18,6 +18,11 @@ ENV TARGET=x86_64-unknown-linux-gnu
 # Work only on ARM64, NO CROSS COMPILE Tested OSX
 FROM builder as builder-arm64
 ENV TARGET=aarch64-unknown-linux-gnu
+RUN apt update && \
+    apt install -y gcc-aarch64-linux-gnu && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc
 
 FROM builder as builder-armv7
 ENV TARGET=armv7-unknown-linux-gnueabihf
@@ -56,7 +61,6 @@ RUN apt update && \
 
 COPY --from=final-builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=final-builder /tado-exporter /usr/bin/
-
 
 RUN if [ "$TARGETARCH$TARGETVARIANT" -eq "armv7"]; then patchelf --set-interpreter /lib/ld-linux-armhf.so.3 /tado-exporter; fi
 
