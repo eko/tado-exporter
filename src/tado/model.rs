@@ -1,8 +1,23 @@
 use serde_derive::Deserialize;
 
 #[derive(Deserialize, Debug)]
-pub struct AuthApiResponse {
+pub struct AuthStartResponse {
+    pub device_code: String,
+    pub expires_in: u64,
+    pub interval: u64,
+    pub verification_uri_complete: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct AuthTokensErrorResponse {
+    pub error: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct AuthTokensResponse {
     pub access_token: String,
+    pub expires_in: u64,
+    pub refresh_token: String,
 }
 
 #[derive(Deserialize, Debug)]

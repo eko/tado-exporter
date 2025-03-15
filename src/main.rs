@@ -41,7 +41,11 @@ async fn main() {
 fn run_ticker(config: config_loader::Config) {
     tokio::spawn(async move {
         let mut tado_client =
-            TadoClient::new(config.username, config.password, config.client_secret);
+            TadoClient::new(config.username, config.password, config.client_id);
+        if let Err(e) = tado_client.authenticate().await {
+            error!("unable to authenticate: {}", e);
+            return;
+        }
 
         info!("waiting for the first tick in {} seconds...", config.ticker);
 
@@ -52,6 +56,11 @@ fn run_ticker(config: config_loader::Config) {
 
         loop {
             ticker.tick().await;
+            if let Err(e) = tado_client.refresh_authentication().await {
+                error!("unable to refresh authentication tokens: {}", e);
+                continue;
+            }
+
             metrics::set_zones(tado_client.retrieve_zones().await);
             metrics::set_weather(tado_client.retrieve_weather().await);
         }
