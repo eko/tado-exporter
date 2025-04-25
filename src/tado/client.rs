@@ -1,14 +1,22 @@
+use std::time::{Duration, Instant};
+use std::vec::Vec;
+
 use lazy_static::lazy_static;
 use log::{error, info};
 use reqwest;
-use std::vec::Vec;
 
+use super::error::AuthError;
 use super::model::{
-    AuthApiResponse, MeApiResponse, WeatherApiResponse, ZoneStateApiResponse,
+    AuthStartResponse, AuthTokensErrorResponse, AuthTokensResponse, MeApiResponse,
+    WeatherApiResponse, ZoneStateApiResponse,
 };
 
+const AUTH_PENDING_MESSAGE: &str = "authorization_pending";
+
 lazy_static! {
-    static ref AUTH_URL: reqwest::Url = "https://auth.tado.com/oauth/token".parse().unwrap();
+    // TODO: POST DEVICE - https://login.tado.com/oauth2/device
+    static ref AUTH_START_URL: reqwest::Url = "https://login.tado.com/oauth2/device_authorize".parse().unwrap();
+    static ref AUTH_TOKEN_URL: reqwest::Url = "https://login.tado.com/oauth2/token".parse().unwrap();
     pub static ref BASE_URL: reqwest::Url = "https://my.tado.com/api/v2/".parse().unwrap();
     pub static ref HOPS_URL: reqwest::Url = "https://hops.tado.com/".parse().unwrap();
 }
@@ -16,59 +24,77 @@ lazy_static! {
 pub struct Client {
     http_client: reqwest::Client,
     base_url: reqwest::Url,
+
+    // API Authentication information.
     username: String,
     password: String,
-    client_secret: String,
-    access_token: String,
+    client_id: String,
+    tokens: AuthTokensResponse,
+    tokens_refresh_by: Instant,
+
     home_id: i32,
 }
 
 impl Client {
-    pub fn new(username: String, password: String, client_secret: String) -> Client {
-        Client::with_base_url(BASE_URL.clone(),  username, password, client_secret)
+    pub fn new(username: String, password: String, client_id: String) -> Client {
+        Client::with_base_url(BASE_URL.clone(), username, password, client_id)
     }
 
     fn with_base_url(
         base_url: reqwest::Url,
         username: String,
         password: String,
-        client_secret: String,
+        client_id: String,
     ) -> Client {
         Client {
             http_client: reqwest::Client::new(),
             base_url,
             username,
             password,
-            client_secret,
-            access_token: String::default(),
+            client_id,
+            tokens: AuthTokensResponse {
+                access_token: String::default(),
+                expires_in: 0,
+                refresh_token: String::default(),
+            },
+            tokens_refresh_by: Instant::now(),
             home_id: 0,
         }
     }
 
-    async fn authenticate(&mut self) -> Result<AuthApiResponse, reqwest::Error> {
-        let params = [
-            ("client_id", "tado-web-app"),
-            ("client_secret", self.client_secret.as_str()),
-            ("grant_type", "password"),
-            ("scope", "home.user"),
-            ("username", self.username.as_str()),
-            ("password", self.password.as_str()),
+    /// Authenticate to the Tado API service.
+    ///
+    /// The authentication processes uses the oauth2 device code grant flow as required by Tado
+    /// <https://support.tado.com/en/articles/8565472-how-do-i-authenticate-to-access-the-rest-api>.
+    ///
+    /// To avoid manual intervention, the method also attempts to complete the login challenge
+    /// on behalf of the user.
+    pub async fn authenticate(&mut self) -> Result<(), AuthError> {
+        // Start device authentication flow.
+        let start_params = [
+            ("client_id", self.client_id.as_str()),
+            ("scope", "offline_access"),
         ];
-
         let resp = self
             .http_client
-            .post(AUTH_URL.clone())
-            .form(&params)
+            .post(AUTH_START_URL.clone())
+            .form(&start_params)
             .send()
             .await?;
+        let start = resp.json::<AuthStartResponse>().await?;
+        info!("Started device authentication flow with URL {}", start.verification_uri_complete);
 
-        resp.json::<AuthApiResponse>().await
+        // TODO: run through login flow.
+
+        // Wait for API tokens to be returned once the flow is complete.
+        self.wait_for_tokens(start).await?;
+        Ok(())
     }
 
     async fn get(&self, url: reqwest::Url) -> Result<reqwest::Response, reqwest::Error> {
         self.http_client
             .get(url)
-            .header("Authorization", format!("Bearer {}", self.access_token))
+            .header("Authorization", format!("Bearer {}", self.tokens.access_token))
             .send()
             .await
     }
@@ -108,8 +134,31 @@ impl Client {
             }
         };
 
-        self.access_token = api_response.access_token;
+    /// Refresh the API access token if it expired.
+    pub async fn refresh_authentication(&mut self) -> Result<(), AuthError> {
+        if Instant::now() < self.tokens_refresh_by {
+            return Ok(());
+        }
 
+        let refresh_params = [
+            ("client_id", self.client_id.as_str()),
+            ("grant_type", "refresh_token"),
+            ("refresh_token", self.tokens.refresh_token.as_str()),
+        ];
+        let resp = self
+            .http_client
+            .post(AUTH_TOKEN_URL.clone())
+            .form(&refresh_params)
+            .send()
+            .await?;
+
+        let tokens = resp.json::<AuthTokensResponse>().await?;
+        self.set_tokens(tokens);
+        info!("API access tokens refreshed");
+        Ok(())
+    }
+
+    pub async fn retrieve_zones(&mut self) -> Vec<ZoneStateResponse> {
         // retrieve home details (only if we don't already have a home identifier)
         if self.home_id == 0 {
             let me_response = match self.me().await {
@@ -156,16 +205,6 @@ impl Client {
     pub async fn retrieve_weather(&mut self) -> Option<WeatherApiResponse> {
         info!("retrieving weather details ...");
 
-        let api_response = match self.authenticate().await {
-            Ok(resp) => resp,
-            Err(e) => {
-                error!("unable to authenticate: {}", e);
-                return None;
-            }
-        };
-
-        self.access_token = api_response.access_token;
-
         // retrieve home details (only if we don't already have a home identifier)
         if self.home_id == 0 {
             let me_response = match self.me().await {
@@ -189,6 +228,57 @@ impl Client {
         };
 
         Some(weather_response)
+    }
+
+    /// Set the API access tokens to use and manage related metadata.
+    fn set_tokens(&mut self, tokens: AuthTokensResponse) {
+        // Reduce the tokens validity slightly to refresh before they expire.
+        let expires_in = tokens.expires_in - 10;
+        self.tokens = tokens;
+        self.tokens_refresh_by = Instant::now() + Duration::from_secs(expires_in);
+    }
+
+    async fn wait_for_tokens(&mut self, start: AuthStartResponse) -> Result<(), AuthError> {
+        let must_complete_by = Instant::now() + Duration::from_secs(start.expires_in);
+        let token_params = [
+            ("client_id", self.client_id.as_str()),
+            ("device_code", &start.device_code),
+            ("grant_type", "urn:ietf:params:oauth:grant-type:device_code"),
+        ];
+        while Instant::now() < must_complete_by {
+            let resp = self
+                .http_client
+                .post(AUTH_TOKEN_URL.clone())
+                .form(&token_params)
+                .send()
+                .await?;
+            match resp.status() {
+                reqwest::StatusCode::OK => {
+                    let tokens = resp.json::<AuthTokensResponse>().await?;
+                    self.set_tokens(tokens);
+                    info!("Device authentication flow completed");
+                    return Ok(());
+                }
+                reqwest::StatusCode::BAD_REQUEST => {
+                    let error = resp
+                        .error_for_status_ref()
+                        .expect_err("must be error for BAD_REQUEST");
+                    let failure = resp.json::<AuthTokensErrorResponse>().await?;
+                    if failure.error != AUTH_PENDING_MESSAGE {
+                        return Err(AuthError::from(error));
+                    }
+                }
+                _ => {
+                    let status = resp.status();
+                    let url = resp.url().clone();
+                    resp.error_for_status()?;
+                    return Err(AuthError::UnexpectedStatus(status, url));
+                }
+            }
+            info!("Device authentication flow still pending, will retry");
+            tokio::time::sleep(Duration::from_secs(start.interval)).await;
+        }
+        Err(AuthError::Timeout)
     }
 }
 

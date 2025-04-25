@@ -9,7 +9,6 @@ use hyper::{service::make_service_fn, service::service_fn, Server};
 use log::{error, info};
 use std::convert::Infallible;
 use std::time::Duration;
-use ticker::Ticker;
 
 use config::loader as config_loader;
 use tado::client::Client as TadoClient;
@@ -42,12 +41,26 @@ async fn main() {
 fn run_ticker(config: config_loader::Config) {
     tokio::spawn(async move {
         let mut tado_client =
-            TadoClient::new(config.username, config.password, config.client_secret);
+            TadoClient::new(config.username, config.password, config.client_id);
+        if let Err(e) = tado_client.authenticate().await {
+            error!("unable to authenticate: {}", e);
+            return;
+        }
 
         info!("waiting for the first tick in {} seconds...", config.ticker);
 
-        let ticker = Ticker::new((0..).cycle(), Duration::from_secs(config.ticker));
-        for _ in ticker {
+        // Use a ticker instead of sleeping within the loop.
+        // This prevents drift as the ticker keeps counting down during refresh, unlike sleep.
+        let mut ticker = tokio::time::interval(Duration::from_secs(config.ticker));
+        ticker.tick().await;
+
+        loop {
+            ticker.tick().await;
+            if let Err(e) = tado_client.refresh_authentication().await {
+                error!("unable to refresh authentication tokens: {}", e);
+                continue;
+            }
+
             metrics::set_zones(tado_client.retrieve_zones().await);
             metrics::set_weather(tado_client.retrieve_weather().await);
         }

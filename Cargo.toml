@@ -6,19 +6,18 @@ edition = "2018"
 
 [dependencies]
 hyper = { version = "0.14.28", features = ["server", "runtime", "http1", "http2"] }
-tokio = { version = "1.40.0", features = ["full"] }
+tokio = { version = "1.44.2", features = ["full"] }
 lazy_static = "1.5.0"
 prometheus = "0.13.4"
-reqwest = { version = "0.12.8", features = ["json"] }
-serde = "1.0.210"
+reqwest = { version = "0.12.15", features = ["json"] }
+serde = "1.0.219"
 serde_derive = "1.0.123"
-serde_json = "1.0.129"
-ticker = "0.1.1"
-log = "0.4.22"
-env_logger = "0.11.5"
-openssl = { version = "0.10.68", features = ["vendored"] }
+serde_json = "1.0.140"
+log = "0.4.27"
+env_logger = "0.11.6"
+openssl = { version = "0.10.72", features = ["vendored"] }
 
 [dev-dependencies]
 actix-rt = "2.10.0"
 rstest = "0.17.0"
-wiremock = "0.6.2"
+wiremock = "0.6.3"

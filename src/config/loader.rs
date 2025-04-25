@@ -4,7 +4,7 @@ pub struct Config {
     pub ticker: u64,
     pub username: String,
     pub password: String,
-    pub client_secret: String,
+    pub client_id: String,
 }
 
 impl Config {
@@ -13,7 +13,7 @@ impl Config {
         println!("Ticker seconds: {}", self.ticker);
         println!("Username: {}", self.username);
         println!("Password: <not printed>");
-        println!("Client secret: {}", self.client_secret);
+        println!("Client ID: {}", self.client_id);
         println!("------------------------------------");
     }
 }
@@ -32,10 +32,10 @@ pub fn load() -> Config {
             Ok(v) => v,
             Err(_) => "".to_string(),
         },
-        client_secret: match env::var("EXPORTER_CLIENT_SECRET") {
+        client_id: match env::var("EXPORTER_CLIENT_ID") {
             Ok(v) => v,
             Err(_) => {
-                "wZaRN7rpjn3FoNyF5IFuxg9uMzYJcvOoQ8QWiIqS3hfk6gLhVlG57j5YNoZL2Rtc".to_string()
+                "1bb50063-6b0c-4d11-bd99-387f4a91cc46".to_string()
             }
         },
     };
@@ -55,7 +55,7 @@ mod tests {
         env::remove_var("EXPORTER_USERNAME");
         env::remove_var("EXPORTER_PASSWORD");
         env::remove_var("EXPORTER_TICKER");
-        env::remove_var("EXPORTER_CLIENT_SECRET");
+        env::remove_var("EXPORTER_CLIENT_ID");
 
         // when
         let config = load();
@@ -65,15 +65,15 @@ mod tests {
         assert_eq!(config.username, "");
         assert_eq!(config.password, "");
         assert_eq!(
-            config.client_secret,
-            "wZaRN7rpjn3FoNyF5IFuxg9uMzYJcvOoQ8QWiIqS3hfk6gLhVlG57j5YNoZL2Rtc"
+            config.client_id,
+            "1bb50063-6b0c-4d11-bd99-387f4a91cc46"
         );
 
         // given the following environment variable values
         env::set_var("EXPORTER_USERNAME", "test-user");
         env::set_var("EXPORTER_PASSWORD", "123Password!");
         env::set_var("EXPORTER_TICKER", "30");
-        env::set_var("EXPORTER_CLIENT_SECRET", "123-secret");
+        env::set_var("EXPORTER_CLIENT_ID", "client-123");
 
         // when
         let config = load();
@@ -82,6 +82,6 @@ mod tests {
         assert_eq!(config.ticker, 30);
         assert_eq!(config.username, "test-user");
         assert_eq!(config.password, "123Password!");
-        assert_eq!(config.client_secret, "123-secret");
+        assert_eq!(config.client_id, "client-123");
     }
 }
