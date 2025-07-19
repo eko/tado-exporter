@@ -68,37 +68,24 @@ Username: my-username@acme.tld
 Password: your-password
 Client secret: wZaRN7rpjn3FoNyF5IFuxg9uMzYJcvOoQ8QWiIqS3hfk6gLhVlG57j5YNoZL2Rtc
 ------------------------------------
-[2020-02-29T08:56:19Z INFO  tado_exporter] starting tado° exporter on address: V4(0.0.0.0:9898)
-[2020-02-29T08:56:19Z INFO  tado_exporter] waiting for the first tick in 10 seconds...
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::client] retrieving zone details for Office...
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::client] retrieving zone details for Kitchen...
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::client] retrieving zone details for Living Room...
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::client] retrieving zone details for Room...
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Office -> setting temperature (celsius): 23
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Office -> setting temperature (fahrenheit): 73.4
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Office -> sensor temperature (celsius): 23.75
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Office -> sensor temperature (fahrenheit): 74.75
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Office -> sensor humidity: 40.1%
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Office -> heating power: 38%
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Kitchen -> setting temperature (celsius): 22
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Kitchen -> setting temperature (fahrenheit): 71.6
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Kitchen -> sensor temperature (celsius): 22.03
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Kitchen -> sensor temperature (fahrenheit): 71.65
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Kitchen -> sensor humidity: 42.7%
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Kitchen -> heating power: 0%
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Living Room -> setting temperature (celsius): 22
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Living Room -> setting temperature (fahrenheit): 71.6
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Living Room -> sensor temperature (celsius): 22.49
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Living Room -> sensor temperature (fahrenheit): 72.48
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Living Room -> sensor humidity: 42.2%
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Living Room -> heating power: 0%
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Room -> setting temperature (celsius): 20
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Room -> setting temperature (fahrenheit): 68
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Room -> sensor temperature (celsius): 21.42
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Room -> sensor temperature (fahrenheit): 70.56
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Room -> sensor humidity: 45.8%
-[2020-02-29T08:56:30Z INFO  tado_exporter::tado::metrics] -> Room -> heating power: 0%
+[2025-07-01T10:28:03Z INFO  tado_exporter] starting tado° exporter on address: 0.0.0.0:9898
+[2025-07-01T10:28:03Z INFO  tado_exporter::tado::client] Started device authentication flow with URL https://login.tado.com/oauth2/device?user_code=PTZ9BQ
+[2025-07-01T10:28:03Z INFO  tado_exporter::tado::client] Device authentication flow still pending, will retry
+[2025-07-01T10:28:08Z INFO  tado_exporter::tado::client] Device authentication flow still pending, will retry
 ...
+```
+
+At this point you will need to visit the provided URL (in this case, `https://login.tado.com/oauth2/device?user_code=PTZ9BQ`) in your browser and login to authorise the exporter on your behalf.
+
+Once that is done, then exporting should begin:
+
+```
+[2025-07-01T10:30:44Z INFO  tado_exporter::tado::client] Device authentication flow completed
+[2025-07-01T10:30:44Z INFO  tado_exporter] waiting for the first tick in 10 seconds...
+[2025-07-01T10:30:54Z INFO  tado_exporter::tado::client] retrieving zone details for Study...
+[2025-07-01T10:30:54Z INFO  tado_exporter::tado::client] retrieving zone details for Entrance Hall...
+[2025-07-01T10:30:54Z INFO  tado_exporter::tado::client] retrieving zone details for Master Bedroom...
+[2025-07-01T10:30:54Z INFO  tado_exporter::tado::client] retrieving zone details for Living Room...
 ```
 
 Once the exporter is running, you also have to update your `prometheus.yml` configuration to let it scrape the exporter:
