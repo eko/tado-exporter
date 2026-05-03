@@ -21,10 +21,10 @@ If you just want to use it, you need nothing apart download and run the binary f
 You can download the latest version of the binary built for your architecture here:
 
 * Architecture **x86_64** [
-    [Linux](https://github.com/eko/tado-exporter/releases/latest/download/tado-exporter-v0.0.3-x86_64-unknown-linux-gnu.tar.gz)
+    [Linux](https://github.com/eko/tado-exporter/releases/latest/download/tado-exporter-x86_64-unknown-linux-gnu.tar.gz)
 ]
 * Architecture **arm** [
-    [Linux](https://github.com/eko/tado-exporter/releases/latest/download/tado-exporter-v0.0.3-arm-unknown-linux-gnueabihf.tar.gz)
+    [Linux](https://github.com/eko/tado-exporter/releases/latest/download/tado-exporter-arm-unknown-linux-gnueabihf.tar.gz)
 ]
 
 ### Using Docker
