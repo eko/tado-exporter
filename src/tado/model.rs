@@ -59,6 +59,7 @@ pub struct ZoneStateOpenWindowApiResponse {
 pub struct ZoneStateSettingApiResponse {
     #[serde(rename = "type")]
     pub deviceType: String,
+    pub power: Option<String>,
     pub temperature: Option<ZoneStateSettingTemperatureApiResponse>,
 }
 

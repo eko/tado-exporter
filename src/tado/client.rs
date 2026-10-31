@@ -398,6 +398,7 @@ mod tests {
             ZoneStateApiResponse {
                 setting : ZoneStateSettingApiResponse {
                     deviceType: "tado".to_string(),
+                    power: None,
                     temperature: Some(ZoneStateSettingTemperatureApiResponse {
                         celsius: 21.53,
                         fahrenheit: 70.75
@@ -455,6 +456,7 @@ mod tests {
             ZoneStateApiResponse {
                 setting : ZoneStateSettingApiResponse {
                     deviceType: "tado".to_string(),
+                    power: None,
                     temperature: Some(ZoneStateSettingTemperatureApiResponse {
                         celsius: 21.53,
                         fahrenheit: 70.75
@@ -480,6 +482,35 @@ mod tests {
                     humidity : Some(SensorDataPointsHumidityApiResponse {
                         percentage: 75.0
                     })
+                }
+            }
+        ),
+        // A hot water zone has no sensor and no activity data, and it has no
+        // temperature when it is turned off.
+        case(
+            r#"{
+                "setting":{
+                  "type":"HOT_WATER",
+                  "power":"OFF",
+                  "temperature":null
+                },
+                "activityDataPoints":{},
+                "sensorDataPoints":{}
+              }"#,
+            ZoneStateApiResponse {
+                setting : ZoneStateSettingApiResponse {
+                    deviceType: "HOT_WATER".to_string(),
+                    power: Some("OFF".to_string()),
+                    temperature: None
+                },
+                activityDataPoints : ZoneStateActivityDataPointsApiResponse {
+                    heatingPower : None,
+                    acPower : None
+                },
+                openWindow: None,
+                sensorDataPoints: ZoneStateSensorDataPointsApiResponse {
+                    insideTemperature : None,
+                    humidity : None
                 }
             }
         )
