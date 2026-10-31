@@ -1,8 +1,4 @@
-use reqwest::{
-    Error as HttpError,
-    StatusCode,
-    Url,
-};
+use reqwest::{Error as HttpError, StatusCode, Url};
 
 /// Authentication Errors.
 #[derive(Debug)]
@@ -22,10 +18,9 @@ impl std::fmt::Display for AuthError {
         match self {
             AuthError::Http(inner) => std::fmt::Display::fmt(inner, f),
             AuthError::Timeout => write!(f, "device auth flow took too long to complete"),
-            AuthError::UnexpectedStatus(status, url) => write!(
-                f, "unexpected auth API status {} for URL {}",
-                status, url,
-            ),
+            AuthError::UnexpectedStatus(status, url) => {
+                write!(f, "unexpected auth API status {} for URL {}", status, url,)
+            }
         }
     }
 }

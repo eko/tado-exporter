@@ -3,13 +3,28 @@ name: Push on branch
 on:
   push:
     branches:
-      - '*'
+      - master
+  pull_request:
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked
+
+  build:
+    name: Cross build
+    runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         target:
           - x86_64-unknown-linux-gnu
@@ -17,31 +32,10 @@ jobs:
           - armv7-unknown-linux-gnueabihf
           - aarch64-unknown-linux-gnu
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
         with:
-          toolchain: stable
-          target: ${{ matrix.target }}
-          override: true
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v1
-        with:
-          cache-on-failure: true
-      - uses: actions-rs/cargo@v1
-        name: build
-        with:
-          command: build
-      - uses: actions-rs/cargo@v1
-        name: test
-        with:
-          command: test
-      - uses: actions-rs/cargo@v1
-        name: clippy
-        with:
-          command: clippy
-          args: -- -D warnings
-      - uses: actions-rs/cargo@v1
-        name: fmt
-        with:
-          command: fmt
-          args: --all -- --check
+          key: ${{ matrix.target }}
+      - uses: taiki-e/install-action@cross
+      - run: cross build --release --locked --target=${{ matrix.target }}

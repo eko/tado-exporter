@@ -25,8 +25,6 @@ pub struct Client {
     base_url: reqwest::Url,
 
     // API Authentication information.
-    username: String,
-    password: String,
     client_id: String,
     tokens: AuthTokensResponse,
     tokens_refresh_by: Instant,
@@ -35,21 +33,14 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(username: String, password: String, client_id: String) -> Client {
-        Client::with_base_url(BASE_URL.clone(), username, password, client_id)
+    pub fn new(client_id: String) -> Client {
+        Client::with_base_url(BASE_URL.clone(), client_id)
     }
 
-    fn with_base_url(
-        base_url: reqwest::Url,
-        username: String,
-        password: String,
-        client_id: String,
-    ) -> Client {
+    fn with_base_url(base_url: reqwest::Url, client_id: String) -> Client {
         Client {
             http_client: reqwest::Client::new(),
             base_url,
-            username,
-            password,
             client_id,
             tokens: AuthTokensResponse {
                 access_token: String::default(),
@@ -65,9 +56,7 @@ impl Client {
     ///
     /// The authentication processes uses the oauth2 device code grant flow as required by Tado
     /// <https://support.tado.com/en/articles/8565472-how-do-i-authenticate-to-access-the-rest-api>.
-    ///
-    /// To avoid manual intervention, the method also attempts to complete the login challenge
-    /// on behalf of the user.
+    /// The user has to approve the login by visiting the URL written to the logs.
     pub async fn authenticate(&mut self) -> Result<(), AuthError> {
         // Start device authentication flow.
         let start_params = [
@@ -81,9 +70,10 @@ impl Client {
             .send()
             .await?;
         let start = resp.json::<AuthStartResponse>().await?;
-        info!("Started device authentication flow with URL {}", start.verification_uri_complete);
-
-        // TODO: run through login flow.
+        info!(
+            "Started device authentication flow with URL {}",
+            start.verification_uri_complete
+        );
 
         // Wait for API tokens to be returned once the flow is complete.
         self.wait_for_tokens(start).await?;
@@ -93,7 +83,10 @@ impl Client {
     async fn get(&self, url: reqwest::Url) -> Result<reqwest::Response, reqwest::Error> {
         self.http_client
             .get(url)
-            .header("Authorization", format!("Bearer {}", self.tokens.access_token))
+            .header(
+                "Authorization",
+                format!("Bearer {}", self.tokens.access_token),
+            )
             .send()
             .await
     }
@@ -281,7 +274,6 @@ impl Client {
 }
 
 #[cfg(test)]
-
 mod tests {
     use super::*;
 
@@ -299,14 +291,8 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let client = Client::new(
-            "username".to_string(),
-            "password".to_string(),
-            "client_id".to_string(),
-        );
+        let client = Client::new("client_id".to_string());
 
-        assert_eq!(client.username, "username");
-        assert_eq!(client.password, "password");
         assert_eq!(client.client_id, "client_id");
         assert_eq!(client.base_url, *BASE_URL);
     }
@@ -315,13 +301,9 @@ mod tests {
     fn test_with_base_url() {
         let client = Client::with_base_url(
             "https://example.com".parse().unwrap(),
-            "username".to_string(),
-            "password".to_string(),
             "client_id".to_string(),
         );
 
-        assert_eq!(client.username, "username");
-        assert_eq!(client.password, "password");
         assert_eq!(client.client_id, "client_id");
         assert_eq!(client.base_url, "https://example.com".parse().unwrap());
     }
@@ -377,12 +359,8 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let client = Client::with_base_url(
-            mock_server.uri().parse().unwrap(),
-            "username".to_string(),
-            "password".to_string(),
-            "client_secret".to_string(),
-        );
+        let client =
+            Client::with_base_url(mock_server.uri().parse().unwrap(), "client_id".to_string());
 
         // WHEN
         let actual = client.weather().await.unwrap();
@@ -523,12 +501,8 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let mut client = Client::with_base_url(
-            mock_server.uri().parse().unwrap(),
-            "username".to_string(),
-            "passwored".to_string(),
-            "client_secret".to_string(),
-        );
+        let mut client =
+            Client::with_base_url(mock_server.uri().parse().unwrap(), "client_id".to_string());
 
         // WHEN
         let actual = client.zone_state(0).await.unwrap();
