@@ -39,3 +39,16 @@ jobs:
           key: ${{ matrix.target }}
       - uses: taiki-e/install-action@cross
       - run: cross build --release --locked --target=${{ matrix.target }}
+
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: false

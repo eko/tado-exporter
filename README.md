@@ -23,6 +23,9 @@ You can download the latest version of the binary built for your architecture he
 * Architecture **x86_64** [
     [Linux](https://github.com/eko/tado-exporter/releases/latest/download/tado-exporter-x86_64-unknown-linux-gnu.tar.gz)
 ]
+* Architecture **aarch64** [
+    [Linux](https://github.com/eko/tado-exporter/releases/latest/download/tado-exporter-aarch64-unknown-linux-gnu.tar.gz)
+]
 * Architecture **arm** [
     [Linux](https://github.com/eko/tado-exporter/releases/latest/download/tado-exporter-arm-unknown-linux-gnueabihf.tar.gz)
 ]
@@ -32,13 +35,13 @@ You can download the latest version of the binary built for your architecture he
 
 ### Using Docker
 
-The exporter is also available as a [Docker image](https://hub.docker.com/r/ekofr/tado-exporter).
+The exporter is also available as a [Docker image](https://github.com/eko/tado-exporter/pkgs/container/tado-exporter) for `linux/amd64`, `linux/arm64` and `linux/arm/v7`.
 You can run it using the following example and pass configuration environment variables:
 
 ```
 $ docker run \
   -p '9898:9898' \
-  ekofr/tado-exporter:latest
+  ghcr.io/eko/tado-exporter:latest
 ```
 
 ### From sources
