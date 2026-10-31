@@ -20,6 +20,12 @@ lazy_static! {
         &["zone", "type"]
     )
     .unwrap();
+    pub static ref SETTING_POWER: GaugeVec = register_gauge_vec!(
+        "tado_setting_power_value",
+        "The value of the power setting (1.0 = ON, 0.0 = OFF) in a specific zone.",
+        &["zone", "type"]
+    )
+    .unwrap();
     pub static ref SETTING_TEMPERATURE: GaugeVec = register_gauge_vec!(
         "tado_setting_temperature_value",
         "The temperature of a specific zone in celsius degres.",
@@ -62,9 +68,21 @@ pub fn set_zones(zones: Vec<ZoneStateResponse>) {
     for zone in zones {
         let device_type: String = zone.state_response.setting.deviceType;
 
+        if let Some(power) = zone.state_response.setting.power.as_deref() {
+            SETTING_POWER
+                .with_label_values(&[zone.name.as_str(), device_type.as_str()])
+                .set(if power == "ON" { 1.0 } else { 0.0 });
+            info!(
+                "-> {} ({}) -> setting power: {}",
+                zone.name,
+                device_type.as_str(),
+                power
+            );
+        }
+
         // The setting temperature may be null in the API response, if the
-        // zone's heating mode is turned off. If the temperature setting is
-        // absent, from the API response we'll simply not set its gauge values.
+        // zone's heating mode is turned off. Its series are then removed:
+        // keeping them would expose the last temperature set as still active.
         if let Some(setting_temperature) = zone.state_response.setting.temperature {
             // setting temperature
             let value: f64 = setting_temperature.celsius;
@@ -89,6 +107,14 @@ pub fn set_zones(zones: Vec<ZoneStateResponse>) {
                 value
             );
         } else {
+            for unit in ["celsius", "fahrenheit"] {
+                // An error only means that the series does not exist yet.
+                let _ = SETTING_TEMPERATURE.remove_label_values(&[
+                    zone.name.as_str(),
+                    device_type.as_str(),
+                    unit,
+                ]);
+            }
             info!(
                 "-> {} ({}) -> setting temperature (celsius): Off",
                 zone.name,
@@ -255,9 +281,78 @@ pub async fn renderer(_req: Request<Body>) -> Result<Response<Body>, Infallible>
 mod tests {
     use crate::tado::model::{
         WeatherOutsideTemperatureApiResponse, WeatherSolarIntensityApiResponse,
+        ZoneStateActivityDataPointsApiResponse, ZoneStateApiResponse,
+        ZoneStateSensorDataPointsApiResponse, ZoneStateSettingApiResponse,
+        ZoneStateSettingTemperatureApiResponse,
     };
 
     use super::*;
+
+    fn weather_metrics() -> Vec<prometheus::proto::MetricFamily> {
+        prometheus::gather()
+            .into_iter()
+            .filter(|family| family.name().starts_with("weather_"))
+            .collect()
+    }
+
+    fn zone(name: &str, power: &str, celsius: Option<f64>) -> ZoneStateResponse {
+        ZoneStateResponse {
+            name: name.to_string(),
+            state_response: ZoneStateApiResponse {
+                setting: ZoneStateSettingApiResponse {
+                    deviceType: "HOT_WATER".to_string(),
+                    power: Some(power.to_string()),
+                    temperature: celsius.map(|celsius| ZoneStateSettingTemperatureApiResponse {
+                        celsius,
+                        fahrenheit: celsius * 1.8 + 32.0,
+                    }),
+                },
+                activityDataPoints: ZoneStateActivityDataPointsApiResponse {
+                    heatingPower: None,
+                    acPower: None,
+                },
+                sensorDataPoints: ZoneStateSensorDataPointsApiResponse {
+                    insideTemperature: None,
+                    humidity: None,
+                },
+                openWindow: None,
+            },
+        }
+    }
+
+    #[test]
+    fn test_set_zones_power_off_removes_setting_temperature() {
+        let setting_temperature_series = || {
+            prometheus::gather()
+                .iter()
+                .filter(|family| family.name() == "tado_setting_temperature_value")
+                .flat_map(|family| family.get_metric().iter())
+                .filter(|metric| metric.get_label().iter().any(|l| l.value() == "Boiler"))
+                .count()
+        };
+
+        // A zone that was never on has no series to remove.
+        set_zones(vec![zone("Boiler", "OFF", None)]);
+        assert_eq!(setting_temperature_series(), 0);
+
+        set_zones(vec![zone("Boiler", "ON", Some(50.0))]);
+        assert_eq!(
+            SETTING_POWER
+                .with_label_values(&["Boiler", "HOT_WATER"])
+                .get(),
+            1.0
+        );
+        assert_eq!(setting_temperature_series(), 2);
+
+        set_zones(vec![zone("Boiler", "OFF", None)]);
+        assert_eq!(
+            SETTING_POWER
+                .with_label_values(&["Boiler", "HOT_WATER"])
+                .get(),
+            0.0
+        );
+        assert_eq!(setting_temperature_series(), 0);
+    }
 
     // The Prometheus registry is global: both scenarios live in a single test so
     // that they cannot race when the test harness runs on several threads.
@@ -269,7 +364,7 @@ mod tests {
         THEN the metrics are not set
         */
         set_weather(None);
-        assert_eq!(prometheus::gather().len(), 0);
+        assert_eq!(weather_metrics().len(), 0);
 
         /*
         GIVEN a weather response
@@ -291,7 +386,7 @@ mod tests {
 
         // THEN
         // Check metrics
-        let metrics = prometheus::gather();
+        let metrics = weather_metrics();
 
         assert_eq!(metrics.len(), 2);
         assert_eq!(metrics[0].name(), "weather_outside_temperature");
