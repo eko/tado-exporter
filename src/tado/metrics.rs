@@ -259,8 +259,18 @@ mod tests {
 
     use super::*;
 
+    // The Prometheus registry is global: both scenarios live in a single test so
+    // that they cannot race when the test harness runs on several threads.
     #[test]
-    fn test_set_weather_some() {
+    fn test_set_weather() {
+        /*
+        GIVEN no weather response
+        WHEN set_weather is called
+        THEN the metrics are not set
+        */
+        set_weather(None);
+        assert_eq!(prometheus::gather().len(), 0);
+
         /*
         GIVEN a weather response
         WHEN set_weather is called
@@ -312,22 +322,5 @@ mod tests {
 
         assert_eq!(solar_intensity_metric.len(), 1);
         assert_eq!(solar_intensity_metric[0].get_gauge().get_value(), 100.0);
-    }
-
-    #[test]
-    fn test_set_weather_none() {
-        /*
-        GIVEN no weather response
-        WHEN set_weather is called
-        THEN the metrics are not set
-        */
-
-        // WHEN
-        set_weather(None);
-
-        // THEN
-        let metrics = prometheus::gather();
-
-        assert_eq!(metrics.len(), 0);
     }
 }

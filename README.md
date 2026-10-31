@@ -26,6 +26,9 @@ You can download the latest version of the binary built for your architecture he
 * Architecture **arm** [
     [Linux](https://github.com/eko/tado-exporter/releases/latest/download/tado-exporter-arm-unknown-linux-gnueabihf.tar.gz)
 ]
+* Architecture **armv7** [
+    [Linux](https://github.com/eko/tado-exporter/releases/latest/download/tado-exporter-armv7-unknown-linux-gnueabihf.tar.gz)
+]
 
 ### Using Docker
 
@@ -34,8 +37,6 @@ You can run it using the following example and pass configuration environment va
 
 ```
 $ docker run \
-  -e 'EXPORTER_USERNAME=your-username@acme.tld' \
-  -e 'EXPORTER_PASSWORD=your-password' \
   -p '9898:9898' \
   ekofr/tado-exporter:latest
 ```
@@ -59,14 +60,10 @@ In order to run the exporter, type the following command (arguments are optional
 
 ```bash
 $ export EXPORTER_TICKER=10
-$ export EXPORTER_USERNAME="my-username@acme.tld"
-$ export EXPORTER_PASSWORD="your-password"
 $ ./tado-exporter
 --- tado° exporter configuration ---
 Ticker seconds: 10
-Username: my-username@acme.tld
-Password: your-password
-Client secret: wZaRN7rpjn3FoNyF5IFuxg9uMzYJcvOoQ8QWiIqS3hfk6gLhVlG57j5YNoZL2Rtc
+Client ID: 1bb50063-6b0c-4d11-bd99-387f4a91cc46
 ------------------------------------
 [2025-07-01T10:28:03Z INFO  tado_exporter] starting tado° exporter on address: 0.0.0.0:9898
 [2025-07-01T10:28:03Z INFO  tado_exporter::tado::client] Started device authentication flow with URL https://login.tado.com/oauth2/device?user_code=PTZ9BQ
@@ -75,7 +72,7 @@ Client secret: wZaRN7rpjn3FoNyF5IFuxg9uMzYJcvOoQ8QWiIqS3hfk6gLhVlG57j5YNoZL2Rtc
 ...
 ```
 
-At this point you will need to visit the provided URL (in this case, `https://login.tado.com/oauth2/device?user_code=PTZ9BQ`) in your browser and login to authorise the exporter on your behalf.
+At this point you will need to visit the provided URL (in this case, `https://login.tado.com/oauth2/device?user_code=PTZ9BQ`) in your browser and login to authorise the exporter on your behalf. Tokens are only kept in memory, so this step has to be repeated every time the exporter starts.
 
 Once that is done, then exporting should begin:
 
@@ -101,9 +98,7 @@ scrape_configs:
 
 | Environment variable name    | Description                                                                                |
 |:----------------------------:|--------------------------------------------------------------------------------------------|
-| EXPORTER_USERNAME      | Required. This represent your tado° account username/email                                       |
-| EXPORTER_PASSWORD      | Required. This represent your tado° account password                                             |
-| EXPORTER_CLIENT_SECRET | Optional. This represent your tado° account client secret, using default value seems to work     |
+| EXPORTER_CLIENT_ID     | Optional. This represent the OAuth2 client ID used to authenticate, default value should be kept |
 | EXPORTER_TICKER        | Optional (default: 10). This represent the number of seconds the exporter will look for new data |
 | RUST_LOG               | Optional (default: info). This describes the log level (see https://docs.rs/env_logger/)         |
 
@@ -116,6 +111,9 @@ scrape_configs:
 | tado_setting_temperature_value         | This represent the current temperature you asked/programmed in a zone            |
 | tado_sensor_temperature_value          | This represent the current temperature detected by sensor in a zone              |
 | tado_sensor_humidity_percentage        | This represent the current humidity % detected by sensor in a zone               |
+| tado_sensor_window_opened              | This represent whether an open window is detected (1.0) or not (0.0) in a zone   |
+| weather_solar_intensity                | This represent the solar intensity % outside the house                           |
+| weather_outside_temperature            | This represent the temperature outside the house                                 |
 
 ## Community welcome
 
