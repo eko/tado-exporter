@@ -206,7 +206,7 @@ pub fn set_weather(weather_response: Option<WeatherApiResponse>) {
         let solar_intensity_percentage = weather.solarIntensity.percentage;
 
         WEATHER_SOLAR_INTENSITY
-            .with_label_values(&[])
+            .with_label_values::<&str>(&[])
             .set(weather.solarIntensity.percentage);
         info!(
             "-> setting solar intensity (percentage): {}",
@@ -294,8 +294,8 @@ mod tests {
         let metrics = prometheus::gather();
 
         assert_eq!(metrics.len(), 2);
-        assert_eq!(metrics[0].get_name(), "weather_outside_temperature");
-        assert_eq!(metrics[1].get_name(), "weather_solar_intensity");
+        assert_eq!(metrics[0].name(), "weather_outside_temperature");
+        assert_eq!(metrics[1].name(), "weather_solar_intensity");
 
         // Check outside temperature metric
         let outside_temperature_metric = metrics[0].get_metric();
@@ -306,21 +306,18 @@ mod tests {
         let outside_temp_fahrenheit = &outside_temperature_metric[1];
 
         assert_eq!(outside_temp_celsius.get_label().len(), 1);
-        assert_eq!(outside_temp_celsius.get_label()[0].get_name(), "unit");
-        assert_eq!(outside_temp_celsius.get_label()[0].get_value(), "celsius");
-        assert_eq!(outside_temp_celsius.get_gauge().get_value(), 20.0);
+        assert_eq!(outside_temp_celsius.get_label()[0].name(), "unit");
+        assert_eq!(outside_temp_celsius.get_label()[0].value(), "celsius");
+        assert_eq!(outside_temp_celsius.get_gauge().value(), 20.0);
         assert_eq!(outside_temp_fahrenheit.get_label().len(), 1);
-        assert_eq!(outside_temp_fahrenheit.get_label()[0].get_name(), "unit");
-        assert_eq!(
-            outside_temp_fahrenheit.get_label()[0].get_value(),
-            "fahrenheit"
-        );
-        assert_eq!(outside_temp_fahrenheit.get_gauge().get_value(), 68.0);
+        assert_eq!(outside_temp_fahrenheit.get_label()[0].name(), "unit");
+        assert_eq!(outside_temp_fahrenheit.get_label()[0].value(), "fahrenheit");
+        assert_eq!(outside_temp_fahrenheit.get_gauge().value(), 68.0);
 
         // Check solar intensity metric
         let solar_intensity_metric = metrics[1].get_metric();
 
         assert_eq!(solar_intensity_metric.len(), 1);
-        assert_eq!(solar_intensity_metric[0].get_gauge().get_value(), 100.0);
+        assert_eq!(solar_intensity_metric[0].get_gauge().value(), 100.0);
     }
 }
